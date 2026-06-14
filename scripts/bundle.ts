@@ -1,4 +1,3 @@
-// Simple deploy bundle: reads dist/ and inlines everything into a single server.ts
 const DIST = "./dist";
 
 async function walk(dir: string): Promise<string[]> {
@@ -21,28 +20,64 @@ for (const f of files) {
 
   if (isBinary) {
     const bytes = await Deno.readFile(f);
-    const b64 = btoa(String.fromCharCode(...bytes));
+    const b64 = toBase64(bytes);
     manifest[key] = `BIN:${b64}`;
   } else {
     manifest[key] = await Deno.readTextFile(f);
   }
 }
 
-const manifestJSON = JSON.stringify(manifest);
+// Write manifest as a separate JSON file to avoid template literal issues
+await Deno.writeTextFile("dist/_manifest.json", JSON.stringify(manifest));
 
-const server = `// Auto-generated — do not edit. Run: deno task bundle
-const MANIFEST = ${manifestJSON};
+// Read it back as raw bytes and encode to base64
+// Chunked base64 to avoid call stack overflow on large files
+function toBase64(bytes: Uint8Array): string {
+  let binary = "";
+  const chunk = 8192;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
+  }
+  return btoa(binary);
+}
+
+const manifestBytes = await Deno.readFile("dist/_manifest.json");
+const manifestB64 = toBase64(manifestBytes);
+
+const server = `// Auto-generated deploy bundle — do not edit.
+const MANIFEST_JSON = atob("${manifestB64}");
+const MANIFEST: Record<string, string> = JSON.parse(MANIFEST_JSON);
 
 const MIME: Record<string, string> = {
-  ".html":"text/html; charset=utf-8",".js":"application/javascript; charset=utf-8",
-  ".css":"text/css; charset=utf-8",".json":"application/json; charset=utf-8",
-  ".png":"image/png",".jpg":"image/jpeg",".svg":"image/svg+xml",
-  ".ico":"image/x-icon",".woff2":"font/woff2",".webm":"video/webm",
-  ".mp4":"video/mp4",".webp":"image/webp",
+  ".html":"text/html; charset=utf-8",
+  ".js":"application/javascript; charset=utf-8",
+  ".mjs":"application/javascript; charset=utf-8",
+  ".css":"text/css; charset=utf-8",
+  ".json":"application/json; charset=utf-8",
+  ".png":"image/png",
+  ".jpg":"image/jpeg",
+  ".jpeg":"image/jpeg",
+  ".gif":"image/gif",
+  ".svg":"image/svg+xml",
+  ".ico":"image/x-icon",
+  ".woff":"font/woff",
+  ".woff2":"font/woff2",
+  ".ttf":"font/ttf",
+  ".webm":"video/webm",
+  ".mp4":"video/mp4",
+  ".webp":"image/webp",
+  ".mp3":"audio/mpeg",
+  ".wav":"audio/wav",
+  ".ogg":"audio/ogg",
+  ".m4a":"audio/mp4",
+  ".flac":"audio/flac",
+  ".aac":"audio/aac",
 };
 
 function getMime(path: string): string {
-  const ext = path.slice(path.lastIndexOf("."));
+  const idx = path.lastIndexOf(".");
+  if (idx < 0) return "application/octet-stream";
+  const ext = path.slice(idx);
   return MIME[ext] ?? "application/octet-stream";
 }
 
@@ -61,21 +96,28 @@ function resolveFile(path: string): Uint8Array | null {
 
 export default {
   async fetch(req: Request): Promise<Response> {
-    const { pathname } = new URL(req.url);
+    const url = new URL(req.url);
+    let pathname = url.pathname;
+
+    // Remove trailing slash
+    if (pathname.endsWith("/") && pathname.length > 1) {
+      pathname = pathname.slice(0, -1);
+    }
 
     // Try exact match
-    const exact = resolveFile(pathname);
-    if (exact) {
-      return new Response(exact, {
+    const file = resolveFile(pathname);
+    if (file) {
+      return new Response(file, {
         headers: {
           "content-type": getMime(pathname),
           "cache-control": pathname.includes("/assets/")
-            ? "public, max-age=31536000, immutable" : "no-cache",
+            ? "public, max-age=31536000, immutable"
+            : "no-cache",
         },
       });
     }
 
-    // SPA fallback
+    // SPA fallback — serve index.html for non-file routes
     const index = resolveFile("/index.html");
     if (index) {
       return new Response(index, {
@@ -89,6 +131,11 @@ export default {
 `;
 
 await Deno.writeTextFile("deploy.ts", server);
+
+// Cleanup
+await Deno.remove("dist/_manifest.json");
+
 const size = (new TextEncoder().encode(server).length / 1024).toFixed(0);
 console.log(`✓ deploy.ts generated (${size} KB)`);
-console.log(`  Files inlined: ${files.length}`);
+console.log(`  Files inlined: ${Object.keys(manifest).length}`);
+Object.keys(manifest).forEach(k => console.log(`    ${k}`));

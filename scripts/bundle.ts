@@ -94,48 +94,59 @@ function resolveFile(path: string): Uint8Array | null {
   return new TextEncoder().encode(raw);
 }
 
-export default {
-  async fetch(req: Request): Promise<Response> {
-    const url = new URL(req.url);
-    let pathname = url.pathname;
+const port = parseInt(Deno.env.get("PORT") ?? "8000");
+Deno.serve({ port }, (req: Request): Response => {
+  const url = new URL(req.url);
+  let pathname = url.pathname;
 
-    // Remove trailing slash
-    if (pathname.endsWith("/") && pathname.length > 1) {
-      pathname = pathname.slice(0, -1);
-    }
+  // Remove trailing slash
+  if (pathname.endsWith("/") && pathname.length > 1) {
+    pathname = pathname.slice(0, -1);
+  }
 
-    // Try exact match
-    const file = resolveFile(pathname);
-    if (file) {
-      return new Response(file, {
-        headers: {
-          "content-type": getMime(pathname),
-          "cache-control": pathname.includes("/assets/")
-            ? "public, max-age=31536000, immutable"
-            : "no-cache",
-        },
-      });
-    }
+  // Try exact match
+  const file = resolveFile(pathname);
+  if (file) {
+    return new Response(file, {
+      headers: {
+        "content-type": getMime(pathname),
+        "cache-control": pathname.includes("/assets/")
+          ? "public, max-age=31536000, immutable"
+          : "no-cache",
+      },
+    });
+  }
 
-    // SPA fallback — serve index.html for non-file routes
-    const index = resolveFile("/index.html");
-    if (index) {
-      return new Response(index, {
-        headers: { "content-type": "text/html; charset=utf-8" },
-      });
-    }
+  // SPA fallback — serve index.html for non-file routes
+  const index = resolveFile("/index.html");
+  if (index) {
+    return new Response(index, {
+      headers: { "content-type": "text/html; charset=utf-8" },
+    });
+  }
 
-    return new Response("Not Found", { status: 404 });
-  },
-};
+  return new Response("Not Found", { status: 404 });
+});
 `;
 
-await Deno.writeTextFile("deploy.ts", server);
+// Save original main.ts as server.ts (dev server)
+try {
+  await Deno.stat("main.ts");
+  // main.ts exists and is NOT the bundled version — preserve as server.ts
+  const content = await Deno.readTextFile("main.ts");
+  if (!content.includes("MANIFEST_JSON")) {
+    await Deno.writeTextFile("server.ts", content);
+  }
+} catch {
+  // main.ts doesn't exist, skip
+}
+
+await Deno.writeTextFile("main.ts", server);
 
 // Cleanup
 await Deno.remove("dist/_manifest.json");
 
 const size = (new TextEncoder().encode(server).length / 1024).toFixed(0);
-console.log(`✓ deploy.ts generated (${size} KB)`);
+console.log(`✓ main.ts generated (${size} KB)`);
 console.log(`  Files inlined: ${Object.keys(manifest).length}`);
 Object.keys(manifest).forEach(k => console.log(`    ${k}`));

@@ -4,14 +4,16 @@
     "build": "npm run build",
     "bundle": "deno run --allow-read --allow-write --allow-env scripts/bundle.ts",
     "preview": "deno serve --allow-net --allow-read --port 7654 deploy.ts",
-    "deploy": "deno task build && deno task bundle && deno deploy --app visualizer-mesin-tempur-web --prod --ignore node_modules --ignore dist --ignore src --ignore scripts --ignore public",
-    "deploy-preview": "deno task build && deno task bundle && deno deploy --app visualizer-mesin-tempur-web --ignore node_modules --ignore dist --ignore src --ignore scripts --ignore public"
+    "deploy": "deno task build && deno task bundle && deno deploy --prod --ignore node_modules --ignore dist --ignore src --ignore scripts --ignore public",
+    "deploy-preview": "deno task build && deno task bundle && deno deploy --ignore node_modules --ignore dist --ignore src --ignore scripts --ignore public"
   },
   "deploy": {
-    "entrypoint": "deploy.ts"
+    "org": "jhonoryza",
+    "app": "visualizer-mesin-tempur-web"
   },
   "imports": {
     "@std/path": "jsr:@std/path@1",
     "@std/fs": "jsr:@std/fs@1"
   }
 }
+

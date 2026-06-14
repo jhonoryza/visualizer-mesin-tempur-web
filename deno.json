@@ -4,11 +4,16 @@
     "build": "npm run build",
     "bundle": "deno run --allow-read --allow-write --allow-env scripts/bundle.ts",
     "preview": "deno serve --allow-net --allow-read --port 7654 main.ts",
-    "deploy": "deno task build && deno task bundle && deno deploy --app visualizer-mesin-tempur-web --prod --ignore node_modules --ignore dist --ignore src --ignore scripts --ignore public --ignore server.ts --ignore index.html --ignore index.dev.html --ignore eslint.config.js --ignore tsconfig*.json --ignore package*.json --ignore README.md --ignore .gitignore",
-    "deploy-preview": "deno task build && deno task bundle && deno deploy --app visualizer-mesin-tempur-web --ignore node_modules --ignore dist --ignore src --ignore scripts --ignore public --ignore server.ts --ignore index.html --ignore index.dev.html --ignore eslint.config.js --ignore tsconfig*.json --ignore package*.json --ignore README.md --ignore .gitignore"
+    "deploy": "deno task build && deno task bundle && mv index.html index.html.bak && deno deploy --app visualizer-mesin-tempur-web --prod --ignore node_modules --ignore dist --ignore src --ignore scripts --ignore public --ignore server.ts; mv index.html.bak index.html",
+    "deploy-preview": "deno task build && deno task bundle && mv index.html index.html.bak && deno deploy --app visualizer-mesin-tempur-web --ignore node_modules --ignore dist --ignore src --ignore scripts --ignore public --ignore server.ts; mv index.html.bak index.html"
   },
   "imports": {
     "@std/path": "jsr:@std/path@1",
     "@std/fs": "jsr:@std/fs@1"
+  },
+  "deploy": {
+    "org": "jhonoryza",
+    "app": "tempur"
   }
 }
+

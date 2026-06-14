@@ -1,0 +1,326 @@
+@import "tailwindcss";
+
+@theme {
+  --font-mono: "Share Tech Mono", "Fira Code", "Courier New", monospace;
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+/* ===== TACTICAL AMBER — military HUD, sharp, glow ===== */
+[data-theme="tactical-amber"] {
+  --t-primary: #f59e0b;
+  --t-panel: #111111;
+  --t-panel-border: #f59e0b33;
+  --t-panel-bg: #0a0a0a;
+  --t-glow: #f59e0b66;
+  --t-glow-soft: #f59e0b22;
+  --t-glow-faint: #f59e0b11;
+  --t-radius: 0px;
+  --t-font: "Share Tech Mono", "Fira Code", "Courier New", monospace;
+  --t-border-w: 1px;
+  --t-shadow: none;
+  --t-panel-gradient: none;
+  --t-btn-radius: 0px;
+  --t-scanline: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+  --t-vignette: radial-gradient(ellipse at center, transparent 50%, rgba(0,0,0,0.4) 100%);
+}
+
+/* ===== DARK MATTER — space ambient, thin hairlines, minimal ===== */
+[data-theme="dark-matter"] {
+  --t-primary: #94a3b8;
+  --t-panel: #0c0f14;
+  --t-panel-border: #1e293b;
+  --t-panel-bg: #0f1318;
+  --t-glow: #47556944;
+  --t-glow-soft: #33415522;
+  --t-glow-faint: #1e293b18;
+  --t-radius: 2px;
+  --t-font: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  --t-border-w: 1px;
+  --t-shadow: 0 1px 3px rgba(0,0,0,0.5);
+  --t-panel-gradient: linear-gradient(180deg, #141920 0%, #0c0f14 100%);
+  --t-btn-radius: 2px;
+  --t-scanline: none;
+  --t-vignette: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.6) 100%);
+}
+
+/* ===== TWITTER DARK — X/Twitter dark, clean, blue accent ===== */
+[data-theme="twitter-dark"] {
+  --t-primary: #1d9bf0;
+  --t-panel: #16181c;
+  --t-panel-border: #2f3336;
+  --t-panel-bg: #16181c;
+  --t-glow: #1d9bf033;
+  --t-glow-soft: #1d9bf018;
+  --t-glow-faint: #1d9bf00d;
+  --t-radius: 12px;
+  --t-font: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --t-border-w: 1px;
+  --t-shadow: 0 0 0 1px #2f3336;
+  --t-panel-gradient: none;
+  --t-btn-radius: 9999px;
+  --t-scanline: none;
+  --t-vignette: none;
+}
+
+/* ===== CLAUDE DARK — warm dark, rounded, subtle amber ===== */
+[data-theme="claude"] {
+  --t-primary: #d4a574;
+  --t-panel: #1a1814;
+  --t-panel-border: #2e2a22;
+  --t-panel-bg: #1f1c17;
+  --t-glow: #d4a57433;
+  --t-glow-soft: #d4a57418;
+  --t-glow-faint: #d4a5740d;
+  --t-radius: 8px;
+  --t-font: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  --t-border-w: 1px;
+  --t-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  --t-panel-gradient: none;
+  --t-btn-radius: 6px;
+  --t-scanline: none;
+  --t-vignette: none;
+}
+
+/* ===== NEON TOKYO — cyberpunk, neon glow, glass ===== */
+[data-theme="neon-tokyo"] {
+  --t-primary: #f472b6;
+  --t-panel: #0a0612;
+  --t-panel-border: #f472b644;
+  --t-panel-bg: #0c0818;
+  --t-glow: #f472b688;
+  --t-glow-soft: #f472b633;
+  --t-glow-faint: #f472b618;
+  --t-radius: 4px;
+  --t-font: "Share Tech Mono", "Fira Code", monospace;
+  --t-border-w: 1px;
+  --t-shadow: 0 0 20px #f472b622, 0 0 40px #a855f711;
+  --t-panel-gradient: linear-gradient(180deg, rgba(244,114,182,0.06) 0%, transparent 100%);
+  --t-btn-radius: 2px;
+  --t-scanline: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(244,114,182,0.015) 3px, rgba(244,114,182,0.015) 4px);
+  --t-vignette: radial-gradient(ellipse at center, transparent 40%, rgba(10,6,18,0.7) 100%);
+}
+
+@layer base {
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #000;
+    color: var(--t-primary);
+    font-family: var(--t-font);
+    overflow-x: hidden;
+    transition: color 0.3s;
+  }
+
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--t-panel-bg); }
+  ::-webkit-scrollbar-thumb { background: var(--t-glow); }
+  ::selection { background: var(--t-glow-soft); color: var(--t-primary); }
+}
+
+@layer components {
+  .hud-panel {
+    background: var(--t-panel-bg);
+    border: var(--t-border-w) solid var(--t-panel-border);
+    border-radius: var(--t-radius);
+    position: relative;
+    transition: background 0.3s, border-color 0.3s;
+  }
+
+  [data-theme="tactical-amber"] .hud-panel::before,
+  [data-theme="dark-matter"] .hud-panel::before,
+  [data-theme="neon-tokyo"] .hud-panel::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--t-glow), transparent);
+  }
+
+  .glow-text {
+    text-shadow:
+      0 0 7px var(--t-glow),
+      0 0 15px var(--t-glow-soft),
+      0 0 30px var(--t-glow-faint);
+  }
+
+  .glow-border {
+    box-shadow: var(--t-shadow);
+  }
+  [data-theme="tactical-amber"] .glow-border,
+  [data-theme="neon-tokyo"] .glow-border {
+    box-shadow:
+      var(--t-shadow),
+      0 0 15px var(--t-glow-faint),
+      inset 0 0 15px var(--t-glow-faint);
+  }
+
+  .military-input {
+    background: var(--t-panel-bg);
+    border: var(--t-border-w) solid var(--t-panel-border);
+    border-radius: var(--t-radius);
+    color: var(--t-primary);
+    font-family: var(--t-font);
+    padding: 6px 10px;
+    font-size: 12px;
+    outline: none;
+    transition: all 0.2s;
+  }
+
+  .military-input:focus {
+    border-color: var(--t-primary);
+    box-shadow: 0 0 0 2px var(--t-glow-faint);
+  }
+
+  .military-input::placeholder {
+    color: var(--t-glow);
+  }
+
+  .military-select {
+    background: var(--t-panel-bg);
+    border: var(--t-border-w) solid var(--t-panel-border);
+    border-radius: var(--t-radius);
+    color: var(--t-primary);
+    font-family: var(--t-font);
+    padding: 6px 10px;
+    font-size: 12px;
+    outline: none;
+    appearance: none;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    padding-right: 28px;
+    transition: all 0.2s;
+  }
+
+  .military-select:focus {
+    border-color: var(--t-primary);
+  }
+
+  .military-btn {
+    background: transparent;
+    border: var(--t-border-w) solid var(--t-primary);
+    border-radius: var(--t-btn-radius);
+    color: var(--t-primary);
+    font-family: var(--t-font);
+    font-size: 11px;
+    padding: 6px 14px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.15s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .military-btn:hover {
+    background: var(--t-glow-faint);
+    text-shadow: 0 0 6px var(--t-glow);
+  }
+
+  [data-theme="tactical-amber"] .military-btn:hover,
+  [data-theme="neon-tokyo"] .military-btn:hover {
+    box-shadow: 0 0 20px var(--t-glow), inset 0 0 10px var(--t-glow-faint);
+  }
+
+  .military-btn:active {
+    background: var(--t-glow-soft);
+  }
+
+  .military-btn.active {
+    background: var(--t-glow-soft);
+    border-color: var(--t-primary);
+  }
+
+  [data-theme="tactical-amber"] .military-btn.active,
+  [data-theme="neon-tokyo"] .military-btn.active {
+    box-shadow: 0 0 20px var(--t-glow), inset 0 0 15px var(--t-glow-soft);
+    text-shadow: 0 0 10px var(--t-glow);
+  }
+
+  /* Twitter: active fills with primary color */
+  [data-theme="twitter-dark"] .military-btn.active {
+    background: var(--t-primary);
+    color: #000;
+    font-weight: 600;
+  }
+
+  .military-btn.fire {
+    border-color: #dc2626;
+    color: #dc2626;
+    animation: fire-pulse 2s infinite;
+  }
+
+  .military-btn.fire:hover {
+    background: #dc262622;
+  }
+
+  .scanline {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 9999;
+    background: var(--t-scanline);
+    animation: scanline-flicker 0.15s infinite;
+  }
+
+  .scanline::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: var(--t-vignette);
+  }
+
+  /* Clean themes: no scanline */
+  [data-theme="twitter-dark"] .scanline,
+  [data-theme="claude"] .scanline { display: none; }
+
+  .drop-zone {
+    border: 2px dashed var(--t-panel-border);
+    border-radius: var(--t-radius);
+    transition: all 0.3s;
+  }
+
+  .drop-zone:hover,
+  .drop-zone.dragging {
+    border-color: var(--t-primary);
+    background: var(--t-glow-faint);
+  }
+
+  .corner-clip {
+    clip-path: polygon(
+      0 8px, 8px 0, calc(100% - 8px) 0, 100% 8px,
+      100% calc(100% - 8px), calc(100% - 8px) 100%, 8px 100%, 0 calc(100% - 8px)
+    );
+  }
+
+  /* Clean themes: no corner clip */
+  [data-theme="twitter-dark"] .corner-clip,
+  [data-theme="claude"] .corner-clip { clip-path: none; }
+}
+
+@keyframes fire-pulse {
+  0%, 100% { box-shadow: 0 0 15px #dc262633; }
+  50% { box-shadow: 0 0 25px #dc262655, 0 0 50px #dc262622; }
+}
+
+@keyframes scanline-flicker {
+  0% { opacity: 0.97; }
+  50% { opacity: 1; }
+  100% { opacity: 0.98; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+@keyframes radar-sweep {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes data-scroll {
+  from { transform: translateY(0); }
+  to { transform: translateY(-50%); }
+}

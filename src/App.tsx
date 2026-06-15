@@ -7,6 +7,10 @@ import { StatusBar } from './components/StatusBar';
 import { useAudioEngine } from './hooks/useAudioEngine';
 import { usePlaylist } from './hooks/usePlaylist';
 import { useFps } from './hooks/useFps';
+import {
+  SkipBack, SkipForward, Play, Pause,
+  Repeat, Repeat1, Shuffle, CircleOff,
+} from 'lucide-react';
 import type { VisualMode, ColorPreset, AspectRatio, PerformanceMode, AppTheme } from './types';
 import { APP_THEMES } from './types';
 
@@ -16,22 +20,35 @@ export default function App() {
   const { fps } = useFps();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const playingForTrackRef = useRef<string | null>(null);
-
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [appTheme, setAppTheme] = useState<AppTheme>('dark-matter');
+  const [isLocked, setIsLocked] = useState(false);
   const [visualMode, setVisualMode] = useState<VisualMode>('radar');
   const [colorPreset, setColorPreset] = useState<ColorPreset>('hazard');
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('landscape');
   const [performanceMode, setPerformanceMode] = useState<PerformanceMode>('balanced');
   const [mainText, setMainText] = useState('MESIN TEMPUR');
   const [subText, setSubText] = useState('TACTICAL AUDIO VISUALIZER');
-  const [isLocked, setIsLocked] = useState(false);
-  const [appTheme, setAppTheme] = useState<AppTheme>('dark-matter');
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const theme = APP_THEMES[appTheme];
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragTime, setDragTime] = useState(0);
 
+  const theme = APP_THEMES[appTheme];
   const engineRef = audio.engine;
   const trackId = playlist.currentTrack?.id ?? null;
 
-  // Single effect: load track + auto-play on track change
+  // Refs for stable access in effects
+  const nextRef = useRef(playlist.next);
+  nextRef.current = playlist.next;
+  const prevRef = useRef(playlist.prev);
+  prevRef.current = playlist.prev;
+  const repeatModeRef = useRef(playlist.repeatMode);
+  repeatModeRef.current = playlist.repeatMode;
+  const seekRef = useRef(audio.seek);
+  seekRef.current = audio.seek;
+  const isPlayingRef = useRef(audio.isPlaying);
+  isPlayingRef.current = audio.isPlaying;
+
+  // Load + auto-play + attach listeners on track change
   useEffect(() => {
     const track = playlist.currentTrack;
     if (!track) return;
@@ -42,18 +59,36 @@ export default function App() {
       return;
     }
 
-    // Already loaded this track and playing — skip
     if (el.audioElement.src === track.url && playingForTrackRef.current === track.id) {
       return;
     }
 
-    // Stop current, load new
     el.audioElement.pause();
     audio.setIsPlaying(false);
     playingForTrackRef.current = null;
 
     el.audioElement.src = track.url;
     el.audioElement.load();
+
+    const onEnded = () => {
+      audio.setIsPlaying(false);
+      playingForTrackRef.current = null;
+      if (repeatModeRef.current === 'one') {
+        el.audioElement!.currentTime = 0;
+        el.audioElement!.play().then(() => {
+          audio.setIsPlaying(true);
+          if (playlist.currentTrack) playingForTrackRef.current = playlist.currentTrack.id;
+        }).catch(() => {});
+      } else {
+        nextRef.current();
+      }
+    };
+
+    const onMeta = () => {
+      if (el.audioElement) {
+        playlist.updateTrackDuration(track.id, el.audioElement.duration);
+      }
+    };
 
     const onCanPlay = () => {
       el.audioElement?.removeEventListener('canplay', onCanPlay);
@@ -73,46 +108,15 @@ export default function App() {
     };
 
     el.audioElement.addEventListener('canplay', onCanPlay, { once: true });
+    el.audioElement.addEventListener('ended', onEnded);
+    el.audioElement.addEventListener('loadedmetadata', onMeta);
 
     return () => {
       el.audioElement?.removeEventListener('canplay', onCanPlay);
-    };
-  }, [playlist.currentIndex]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  // Handle track ended → next
-  useEffect(() => {
-    const el = engineRef.current;
-    if (!el.audioElement) return;
-
-    const onEnded = () => {
-      audio.setIsPlaying(false);
-      playingForTrackRef.current = null;
-      const rm = playlist.repeatMode;
-      if (rm === 'one') {
-        el.audioElement!.currentTime = 0;
-        el.audioElement!.play().then(() => {
-          audio.setIsPlaying(true);
-          if (playlist.currentTrack) playingForTrackRef.current = playlist.currentTrack.id;
-        }).catch(() => {});
-      } else {
-        playlist.next();
-      }
-    };
-
-    const onMeta = () => {
-      const t = playlist.currentTrack;
-      if (t && el.audioElement) {
-        playlist.updateTrackDuration(t.id, el.audioElement.duration);
-      }
-    };
-
-    el.audioElement.addEventListener('ended', onEnded);
-    el.audioElement.addEventListener('loadedmetadata', onMeta);
-    return () => {
       el.audioElement?.removeEventListener('ended', onEnded);
       el.audioElement?.removeEventListener('loadedmetadata', onMeta);
     };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [playlist.currentIndex]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleFilesLoad = useCallback(
     async (files: File[]) => {
@@ -127,10 +131,54 @@ export default function App() {
   }, []);
 
   const fmtDur = (s: number) => {
+    if (!s || !isFinite(s)) return '0:00';
     const m = Math.floor(s / 60);
     const sec = Math.floor(s % 60);
     return `${m}:${sec.toString().padStart(2, '0')}`;
   };
+
+  const handlePrev = () => {
+    playingForTrackRef.current = null;
+    prevRef.current();
+  };
+
+  const handleNext = () => {
+    playingForTrackRef.current = null;
+    nextRef.current();
+  };
+
+  // Progress bar drag handlers
+  const progressRef = useRef<HTMLDivElement>(null);
+
+  const getTimeFromEvent = useCallback((e: MouseEvent | Touch) => {
+    const el = progressRef.current;
+    if (!el) return 0;
+    const rect = el.getBoundingClientRect();
+    const pct = Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width));
+    return pct * audio.duration;
+  }, [audio.duration]);
+
+  const onPointerDown = useCallback((e: React.PointerEvent) => {
+    const t = getTimeFromEvent(e.nativeEvent);
+    setIsDragging(true);
+    setDragTime(t);
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  }, [getTimeFromEvent]);
+
+  const onPointerMove = useCallback((e: React.PointerEvent) => {
+    if (!isDragging) return;
+    setDragTime(getTimeFromEvent(e.nativeEvent));
+  }, [isDragging, getTimeFromEvent]);
+
+  const onPointerUp = useCallback((e: React.PointerEvent) => {
+    if (!isDragging) return;
+    const t = getTimeFromEvent(e.nativeEvent);
+    seekRef.current(t);
+    setIsDragging(false);
+  }, [isDragging, getTimeFromEvent]);
+
+  const displayTime = isDragging ? dragTime : audio.currentTime;
+  const progressPct = audio.duration > 0 ? (displayTime / audio.duration) * 100 : 0;
 
   return (
     <div className="h-screen w-screen flex flex-col bg-black overflow-hidden" data-theme={appTheme}>
@@ -183,37 +231,6 @@ export default function App() {
         </div>
 
         <div className="flex-1 flex flex-col min-w-0">
-          {playlist.currentTrack && (
-            <div
-              className="flex items-center gap-3 px-3 py-1.5 border-b"
-              style={{ borderColor: theme.panelBorder, background: `var(--t-panel-gradient, ${theme.panel})` }}
-            >
-              <div className="flex items-center gap-2 flex-1 min-w-0">
-                <span className="text-[9px]" style={{ color: theme.primary }}>NOW:</span>
-                <span className="text-[10px] truncate" style={{ color: `color-mix(in srgb, ${theme.primary} 70%, transparent)` }}>
-                  {playlist.currentTrack.name}
-                </span>
-                <span className="text-[8px]" style={{ color: `color-mix(in srgb, ${theme.primary} 40%, transparent)` }}>
-                  {fmtDur(playlist.currentTrack.duration)}
-                </span>
-              </div>
-              <div className="flex items-center gap-1">
-                {playlist.tracks.length > 1 && (
-                  <>
-                    <button className="military-btn text-[8px] py-0.5 px-1.5" onClick={() => { playingForTrackRef.current = null; playlist.prev(); }}>◀</button>
-                    <button className="military-btn text-[8px] py-0.5 px-1.5" onClick={() => { playingForTrackRef.current = null; playlist.next(); }}>▶</button>
-                  </>
-                )}
-                <button
-                  className="military-btn text-[8px] py-0.5 px-1.5"
-                  onClick={playlist.cycleRepeat}
-                >
-                  {playlist.repeatMode === 'one' ? '🔂' : playlist.repeatMode === 'all' ? '🔁' : playlist.repeatMode === 'shuffle' ? '🔀' : '⬜'}
-                </button>
-              </div>
-            </div>
-          )}
-
           <div className="flex-1 overflow-hidden">
             <VisualizerMonitor
               engine={engineRef}
@@ -222,14 +239,76 @@ export default function App() {
               aspectRatio={aspectRatio}
               mainText={mainText}
               subText={subText}
-              isPlaying={audio.isPlaying}
-              onTogglePlay={audio.togglePlay}
               fps={fps}
               performanceMode={performanceMode}
               appTheme={appTheme}
               onCanvasReady={handleCanvasReady}
             />
           </div>
+
+          {playlist.currentTrack && (
+            <div className="border-t" style={{ borderColor: theme.panelBorder, background: `var(--t-panel-gradient, ${theme.panel})` }}>
+              {/* Track name */}
+              <div className="flex items-center justify-center px-3 py-1">
+                <span className="text-[10px] truncate text-center" style={{ color: `color-mix(in srgb, ${theme.primary} 70%, transparent)` }}>
+                  {playlist.currentTrack.name}
+                </span>
+              </div>
+
+              {/* Centered controls */}
+              <div className="flex items-center justify-center gap-2 pb-1">
+                <button className="military-btn p-1.5" onClick={handlePrev}>
+                  <SkipBack className="w-3.5 h-3.5" />
+                </button>
+                <button className="military-btn p-2" onClick={() => audio.togglePlay()}>
+                  {audio.isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                </button>
+                <button className="military-btn p-1.5" onClick={handleNext}>
+                  <SkipForward className="w-3.5 h-3.5" />
+                </button>
+                <button className="military-btn p-1.5" onClick={playlist.cycleRepeat}>
+                  {playlist.repeatMode === 'one' && <Repeat1 className="w-3.5 h-3.5" />}
+                  {playlist.repeatMode === 'all' && <Repeat className="w-3.5 h-3.5" />}
+                  {playlist.repeatMode === 'shuffle' && <Shuffle className="w-3.5 h-3.5" />}
+                  {playlist.repeatMode === 'none' && <CircleOff className="w-3.5 h-3.5" />}
+                </button>
+              </div>
+
+              {/* Progress bar */}
+              <div className="flex items-center gap-2 px-3 pb-1.5">
+                <span className="text-[8px] w-8 text-right flex-shrink-0" style={{ color: `color-mix(in srgb, ${theme.primary} 50%, transparent)` }}>
+                  {fmtDur(displayTime)}
+                </span>
+                <div
+                  ref={progressRef}
+                  className="flex-1 h-5 flex items-center cursor-pointer group relative"
+                  onPointerDown={onPointerDown}
+                  onPointerMove={onPointerMove}
+                  onPointerUp={onPointerUp}
+                  onPointerCancel={onPointerUp}
+                >
+                  <div className="w-full h-1 rounded-full overflow-hidden" style={{ background: `color-mix(in srgb, ${theme.primary} 15%, transparent)` }}>
+                    <div
+                      className="h-full rounded-full transition-none"
+                      style={{ width: `${progressPct}%`, background: theme.primary }}
+                    />
+                  </div>
+                  <div
+                    className="absolute w-3 h-3 rounded-full border-2 transition-transform group-hover:scale-125"
+                    style={{
+                      left: `calc(${progressPct}% - 6px)`,
+                      background: theme.primary,
+                      borderColor: theme.panelBg,
+                      boxShadow: `0 0 6px ${theme.primary}66`,
+                    }}
+                  />
+                </div>
+                <span className="text-[8px] w-8 flex-shrink-0" style={{ color: `color-mix(in srgb, ${theme.primary} 50%, transparent)` }}>
+                  {fmtDur(audio.duration)}
+                </span>
+              </div>
+            </div>
+          )}
 
           <div
             className="flex items-center justify-between px-3 md:px-4 py-2 border-t"

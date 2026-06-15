@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Upload, Trash2, Play, X, ListMusic } from 'lucide-react';
+import { Upload, Trash2, Play, X, ListMusic, Target, Radar, AudioLines, Sparkles, Bomb } from 'lucide-react';
 import type { VisualMode, ColorPreset, AspectRatio, PerformanceMode, AppTheme, Track, RepeatMode } from '../types';
 import { COLOR_PRESETS, APP_THEMES } from '../types';
 
@@ -104,12 +104,12 @@ export function LeftPanel({
     </div>
   );
 
-  const visualModes: { value: VisualMode; label: string; icon: string }[] = [
-    { value: 'circular-target', label: 'Circular Target', icon: '⊕' },
-    { value: 'radar', label: 'Radar', icon: '◎' },
-    { value: 'waveform', label: 'Waveform', icon: '∿' },
-    { value: 'particle', label: 'Particle', icon: '✦' },
-    { value: 'bass-cannon', label: 'Bass Cannon', icon: '✸' },
+  const visualModes: { value: VisualMode; label: string; Icon: typeof Target }[] = [
+    { value: 'circular-target', label: 'Circular Target', Icon: Target },
+    { value: 'radar', label: 'Radar', Icon: Radar },
+    { value: 'waveform', label: 'Waveform', Icon: AudioLines },
+    { value: 'particle', label: 'Particle', Icon: Sparkles },
+    { value: 'bass-cannon', label: 'Bass Cannon', Icon: Bomb },
   ];
 
   const colorPresets: { value: ColorPreset; label: string; preview: string }[] = [
@@ -263,7 +263,7 @@ export function LeftPanel({
                   onClick={() => onVisualModeChange(m.value)}
                   disabled={isLocked}
                 >
-                  <span className="text-sm leading-none">{m.icon}</span>
+                  <m.Icon className="w-4 h-4" />
                   <span className="leading-none">{m.label}</span>
                 </button>
               ))}

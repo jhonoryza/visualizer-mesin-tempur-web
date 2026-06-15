@@ -21,12 +21,14 @@ export default function App() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const playingForTrackRef = useRef<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [appTheme, setAppTheme] = useState<AppTheme>('dark-matter');
+  const [appTheme, setAppTheme] = useState<AppTheme>('claude');
   const [isLocked, setIsLocked] = useState(false);
-  const [visualMode, setVisualMode] = useState<VisualMode>('radar');
-  const [colorPreset, setColorPreset] = useState<ColorPreset>('hazard');
-  const [aspectRatio, setAspectRatio] = useState<AspectRatio>('landscape');
-  const [canvasResolution, setCanvasResolution] = useState<CanvasResolution>('1080p');
+  const [visualMode, setVisualMode] = useState<VisualMode>('bass-cannon');
+  const [colorPreset, setColorPreset] = useState<ColorPreset>('arctic');
+  const [aspectRatio, setAspectRatio] = useState<AspectRatio>(
+    typeof window !== 'undefined' && window.innerWidth < 768 ? 'square' : 'landscape'
+  );
+  const [canvasResolution, setCanvasResolution] = useState<CanvasResolution>('480p');
   const [performanceMode, setPerformanceMode] = useState<PerformanceMode>('balanced');
   const [mainText, setMainText] = useState('WINEMP');
   const [subText, setSubText] = useState('AUDIO VISUALIZER');

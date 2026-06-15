@@ -62,19 +62,19 @@
   --t-vignette: none;
 }
 
-/* ===== CLAUDE DARK — warm dark, rounded, subtle amber ===== */
+/* ===== CLAUDE DARK — warm dark, rounded, amber accent ===== */
 [data-theme="claude"] {
-  --t-primary: #d4a574;
+  --t-primary: #e8b878;
   --t-panel: #1a1814;
-  --t-panel-border: #2e2a22;
+  --t-panel-border: #4a3f30;
   --t-panel-bg: #1f1c17;
-  --t-glow: #d4a57433;
-  --t-glow-soft: #d4a57418;
-  --t-glow-faint: #d4a5740d;
+  --t-glow: #e8b87855;
+  --t-glow-soft: #e8b87833;
+  --t-glow-faint: #e8b87818;
   --t-radius: 8px;
   --t-font: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
   --t-border-w: 1px;
-  --t-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  --t-shadow: 0 1px 4px rgba(0,0,0,0.5);
   --t-panel-gradient: none;
   --t-btn-radius: 6px;
   --t-scanline: none;

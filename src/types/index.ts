@@ -67,11 +67,11 @@ export const APP_THEMES: Record<AppTheme, AppThemeConfig> = {
   'claude': {
     name: 'CLAUDE DARK',
     label: 'Claude Dark',
-    primary: '#d4a574',
+    primary: '#e8b878',
     panel: '#1a1814',
-    panelBorder: '#2e2a22',
+    panelBorder: '#4a3f30',
     panelBg: '#1f1c17',
-    glow: '#d4a57444',
+    glow: '#e8b87855',
   },
   'neon-tokyo': {
     name: 'NEON TOKYO',

@@ -50,10 +50,11 @@ export function VisualizerMonitor({
   const resolution = CANVAS_RESOLUTIONS[canvasResolution];
   const theme = APP_THEMES[appTheme];
 
-  // Canvas renders at resolution, displays scaled to fit container
+  // Canvas renders at resolution (reduced in light mode)
+  const resScale = performanceMode === 'light' ? 0.5 : performanceMode === 'balanced' ? 0.75 : 1;
   const targetRatio = ratio.w / ratio.h;
-  const canvasW = resolution.w;
-  const canvasH = Math.round(canvasW / targetRatio);
+  const canvasW = Math.floor(resolution.w * resScale);
+  const canvasH = Math.floor(canvasW / targetRatio);
 
   const updateDisplaySize = useCallback(() => {
     if (!containerRef.current) return;
@@ -87,16 +88,24 @@ export function VisualizerMonitor({
 
     if (onCanvasReady) onCanvasReady(canvas);
 
-    const analyserFrameSkip = performanceMode === 'light' ? 3 : performanceMode === 'balanced' ? 2 : 1;
     let frameCount = 0;
+    let lastRender = 0;
+    const targetFPS = performanceMode === 'light' ? 30 : 60;
+    const frameInterval = 1000 / targetFPS;
 
-    const animate = () => {
+    const animate = (now: number) => {
+      animFrameRef.current = requestAnimationFrame(animate);
+
+      // Frame rate limiter — skip if too fast
+      if (now - lastRender < frameInterval) return;
+      lastRender = now;
       frameCount++;
       onFpsTick();
 
       const engineData = engine.current;
 
-      if (engineData.analyser && frameCount % analyserFrameSkip === 0) {
+      // Always update audio data (needed for smooth bass pulse)
+      if (engineData.analyser) {
         engineData.analyser.getByteFrequencyData(engineData.frequencyData);
         engineData.analyser.getByteTimeDomainData(engineData.timeDomainData);
 
@@ -145,10 +154,10 @@ export function VisualizerMonitor({
         bassPulse: bassPulseRef.current,
         shakeX: shakeRef.current.x,
         shakeY: shakeRef.current.y,
+        performanceMode,
       };
 
       renderFrame(rc);
-      animFrameRef.current = requestAnimationFrame(animate);
     };
 
     animFrameRef.current = requestAnimationFrame(animate);

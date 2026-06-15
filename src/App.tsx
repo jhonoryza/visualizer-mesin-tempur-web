@@ -27,8 +27,8 @@ export default function App() {
   const [colorPreset, setColorPreset] = useState<ColorPreset>('hazard');
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('landscape');
   const [performanceMode, setPerformanceMode] = useState<PerformanceMode>('balanced');
-  const [mainText, setMainText] = useState('MESIN TEMPUR');
-  const [subText, setSubText] = useState('TACTICAL AUDIO VISUALIZER');
+  const [mainText, setMainText] = useState('WINEMP');
+  const [subText, setSubText] = useState('AUDIO VISUALIZER');
   const [isDragging, setIsDragging] = useState(false);
   const [dragTime, setDragTime] = useState(0);
 

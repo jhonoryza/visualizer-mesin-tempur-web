@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { Lock, Shield, Menu } from 'lucide-react';
+import { Lock, Menu } from 'lucide-react';
 import type { AppTheme } from '../types';
 import { APP_THEMES } from '../types';
 
@@ -39,7 +39,7 @@ export function Header({ isLocked, onToggleLock, appTheme, onAppThemeChange, onM
           className="w-8 h-8 md:w-9 md:h-9 flex items-center justify-center border relative"
           style={{ borderColor: theme.panelBorder, borderRadius: 'var(--t-radius)' }}
         >
-          <Shield className="w-4 h-4 md:w-5 md:h-5" style={{ color: theme.primary }} />
+          <img src="/winemp.png" alt="WINEMP" className="w-full h-full object-cover" style={{ borderRadius: 'var(--t-radius)' }} />
           <div
             className="absolute inset-0 border animate-pulse"
             style={{ borderColor: `color-mix(in srgb, ${theme.primary} 20%, transparent)`, borderRadius: 'var(--t-radius)' }}
@@ -50,13 +50,13 @@ export function Header({ isLocked, onToggleLock, appTheme, onAppThemeChange, onM
             className="text-xs md:text-sm font-bold tracking-[3px] glow-text leading-none"
             style={{ color: theme.primary }}
           >
-            MESIN TEMPUR
+            WINEMP
           </h1>
           <p
             className="text-[7px] md:text-[9px] tracking-[2px] mt-0.5 hidden sm:block"
             style={{ color: `color-mix(in srgb, ${theme.primary} 50%, transparent)` }}
           >
-            SISTEM TAKTIS BEAT-SYNC & PEMBUAT SPEKTRUM MILITER
+            TACTICAL AUDIO VISUALIZER & BEAT-SYNC
           </p>
         </div>
       </div>

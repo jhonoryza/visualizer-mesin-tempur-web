@@ -227,7 +227,7 @@ export default function App() {
             tracks={playlist.tracks}
             currentTrackId={trackId}
             repeatMode={playlist.repeatMode}
-            onPlayTrack={(i) => { playingForTrackRef.current = null; playlist.playTrack(i); }}
+            onPlayTrack={async (i) => { await audio.ensureReady(); playingForTrackRef.current = null; playlist.playTrack(i); }}
             onRemoveTrack={playlist.removeTrack}
             onCycleRepeat={playlist.cycleRepeat}
             onClearAll={playlist.clearAll}

@@ -11,13 +11,13 @@ import {
   SkipBack, SkipForward, Play, Pause,
   Repeat, Repeat1, Shuffle, CircleOff,
 } from 'lucide-react';
-import type { VisualMode, ColorPreset, AspectRatio, PerformanceMode, AppTheme } from './types';
+import type { VisualMode, ColorPreset, AspectRatio, PerformanceMode, AppTheme, CanvasResolution } from './types';
 import { APP_THEMES } from './types';
 
 export default function App() {
   const audio = useAudioEngine();
   const playlist = usePlaylist();
-  const { fps } = useFps();
+  const { fps, tick } = useFps();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const playingForTrackRef = useRef<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -26,6 +26,7 @@ export default function App() {
   const [visualMode, setVisualMode] = useState<VisualMode>('radar');
   const [colorPreset, setColorPreset] = useState<ColorPreset>('hazard');
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('landscape');
+  const [canvasResolution, setCanvasResolution] = useState<CanvasResolution>('1080p');
   const [performanceMode, setPerformanceMode] = useState<PerformanceMode>('balanced');
   const [mainText, setMainText] = useState('WINEMP');
   const [subText, setSubText] = useState('AUDIO VISUALIZER');
@@ -211,6 +212,8 @@ export default function App() {
             onColorPresetChange={setColorPreset}
             aspectRatio={aspectRatio}
             onAspectRatioChange={setAspectRatio}
+            canvasResolution={canvasResolution}
+            onCanvasResolutionChange={setCanvasResolution}
             mainText={mainText}
             onMainTextChange={setMainText}
             subText={subText}
@@ -237,9 +240,11 @@ export default function App() {
               visualMode={visualMode}
               colorPreset={colorPreset}
               aspectRatio={aspectRatio}
+              canvasResolution={canvasResolution}
               mainText={mainText}
               subText={subText}
               fps={fps}
+              onFpsTick={tick}
               performanceMode={performanceMode}
               appTheme={appTheme}
               onCanvasReady={handleCanvasReady}

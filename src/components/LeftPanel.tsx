@@ -1,8 +1,8 @@
 import { useCallback, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Upload, Trash2, Play, X, ListMusic, Target, Radar, AudioLines, Sparkles, Bomb } from 'lucide-react';
-import type { VisualMode, ColorPreset, AspectRatio, PerformanceMode, AppTheme, Track, RepeatMode } from '../types';
-import { COLOR_PRESETS, APP_THEMES } from '../types';
+import type { VisualMode, ColorPreset, AspectRatio, PerformanceMode, AppTheme, Track, RepeatMode, CanvasResolution } from '../types';
+import { COLOR_PRESETS, APP_THEMES, CANVAS_RESOLUTIONS } from '../types';
 
 interface LeftPanelProps {
   performanceMode: PerformanceMode;
@@ -13,6 +13,8 @@ interface LeftPanelProps {
   onColorPresetChange: (p: ColorPreset) => void;
   aspectRatio: AspectRatio;
   onAspectRatioChange: (a: AspectRatio) => void;
+  canvasResolution: CanvasResolution;
+  onCanvasResolutionChange: (r: CanvasResolution) => void;
   mainText: string;
   onMainTextChange: (t: string) => void;
   subText: string;
@@ -40,6 +42,8 @@ export function LeftPanel({
   onColorPresetChange,
   aspectRatio,
   onAspectRatioChange,
+  canvasResolution,
+  onCanvasResolutionChange,
   mainText,
   onMainTextChange,
   subText,
@@ -313,6 +317,24 @@ export function LeftPanel({
                   disabled={isLocked}
                 >
                   {r.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="text-[9px] tracking-wider block mb-1" style={{ color: `color-mix(in srgb, ${theme.primary} 50%, transparent)` }}>
+              RESOLUSI OUTPUT
+            </label>
+            <div className="flex gap-1 flex-wrap">
+              {(Object.keys(CANVAS_RESOLUTIONS) as CanvasResolution[]).map((r) => (
+                <button
+                  key={r}
+                  className={`military-btn text-[8px] py-1 px-1.5 ${canvasResolution === r ? 'active' : ''}`}
+                  onClick={() => onCanvasResolutionChange(r)}
+                  disabled={isLocked}
+                >
+                  {CANVAS_RESOLUTIONS[r].label}
                 </button>
               ))}
             </div>

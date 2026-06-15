@@ -6,6 +6,7 @@ export type ExportFormat = 'webm' | 'mp4';
 export type ExportDuration = 5 | 10 | 15 | 30 | 'full';
 export type AppTheme = 'tactical-amber' | 'dark-matter' | 'twitter-dark' | 'claude' | 'neon-tokyo';
 export type RepeatMode = 'none' | 'one' | 'all' | 'shuffle';
+export type CanvasResolution = '480p' | '720p' | '1080p' | '2k' | '4k';
 
 export interface Track {
   id: string;
@@ -153,4 +154,12 @@ export const ASPECT_RATIOS: Record<AspectRatio, { w: number; h: number; label: s
   landscape: { w: 16, h: 9, label: '16:9' },
   square: { w: 1, h: 1, label: '1:1' },
   vertical: { w: 9, h: 16, label: '9:16' },
+};
+
+export const CANVAS_RESOLUTIONS: Record<CanvasResolution, { w: number; h: number; label: string }> = {
+  '480p': { w: 854, h: 480, label: '480p' },
+  '720p': { w: 1280, h: 720, label: '720p' },
+  '1080p': { w: 1920, h: 1080, label: '1080p' },
+  '2k': { w: 2560, h: 1440, label: '2K' },
+  '4k': { w: 3840, h: 2160, label: '4K' },
 };

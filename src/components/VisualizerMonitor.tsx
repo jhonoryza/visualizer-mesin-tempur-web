@@ -3,8 +3,8 @@ import { motion } from 'framer-motion';
 import { Crosshair } from 'lucide-react';
 import type { AudioEngine } from '../hooks/useAudioEngine';
 import { renderFrame, type RenderContext } from '../lib/renderer';
-import type { ColorScheme, VisualMode, AspectRatio, ColorPreset, AppTheme } from '../types';
-import { COLOR_PRESETS, ASPECT_RATIOS, APP_THEMES } from '../types';
+import type { ColorScheme, VisualMode, AspectRatio, ColorPreset, AppTheme, CanvasResolution } from '../types';
+import { COLOR_PRESETS, ASPECT_RATIOS, APP_THEMES, CANVAS_RESOLUTIONS } from '../types';
 
 type PerformanceMode = 'light' | 'balanced' | 'ultra';
 
@@ -13,9 +13,11 @@ interface VisualizerMonitorProps {
   visualMode: VisualMode;
   colorPreset: ColorPreset;
   aspectRatio: AspectRatio;
+  canvasResolution: CanvasResolution;
   mainText: string;
   subText: string;
   fps: number;
+  onFpsTick: () => void;
   performanceMode: PerformanceMode;
   appTheme: AppTheme;
   onCanvasReady?: (canvas: HTMLCanvasElement) => void;
@@ -26,9 +28,11 @@ export function VisualizerMonitor({
   visualMode,
   colorPreset,
   aspectRatio,
+  canvasResolution,
   mainText,
   subText,
   fps,
+  onFpsTick,
   performanceMode,
   appTheme,
   onCanvasReady,
@@ -39,19 +43,24 @@ export function VisualizerMonitor({
   const timeRef = useRef(0);
   const bassPulseRef = useRef(0);
   const shakeRef = useRef({ x: 0, y: 0, intensity: 0 });
-  const [canvasSize, setCanvasSize] = useState({ w: 960, h: 540 });
+  const [displaySize, setDisplaySize] = useState({ w: 960, h: 540 });
 
   const colors: ColorScheme = COLOR_PRESETS[colorPreset];
   const ratio = ASPECT_RATIOS[aspectRatio];
+  const resolution = CANVAS_RESOLUTIONS[canvasResolution];
   const theme = APP_THEMES[appTheme];
 
-  const updateSize = useCallback(() => {
+  // Canvas renders at resolution, displays scaled to fit container
+  const targetRatio = ratio.w / ratio.h;
+  const canvasW = resolution.w;
+  const canvasH = Math.round(canvasW / targetRatio);
+
+  const updateDisplaySize = useCallback(() => {
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     const maxW = rect.width - 16;
     const maxH = rect.height - 16;
 
-    const targetRatio = ratio.w / ratio.h;
     let w = maxW;
     let h = w / targetRatio;
 
@@ -60,15 +69,15 @@ export function VisualizerMonitor({
       w = h * targetRatio;
     }
 
-    setCanvasSize({ w: Math.floor(w), h: Math.floor(h) });
-  }, [ratio]);
+    setDisplaySize({ w: Math.floor(w), h: Math.floor(h) });
+  }, [targetRatio]);
 
   useEffect(() => {
-    updateSize();
-    const obs = new ResizeObserver(updateSize);
+    updateDisplaySize();
+    const obs = new ResizeObserver(updateDisplaySize);
     if (containerRef.current) obs.observe(containerRef.current);
     return () => obs.disconnect();
-  }, [updateSize]);
+  }, [updateDisplaySize]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -78,11 +87,13 @@ export function VisualizerMonitor({
 
     if (onCanvasReady) onCanvasReady(canvas);
 
-    const analyserFrameSkip = performanceMode === 'light' ? 2 : 1;
+    const analyserFrameSkip = performanceMode === 'light' ? 3 : performanceMode === 'balanced' ? 2 : 1;
     let frameCount = 0;
 
     const animate = () => {
       frameCount++;
+      onFpsTick();
+
       const engineData = engine.current;
 
       if (engineData.analyser && frameCount % analyserFrameSkip === 0) {
@@ -107,26 +118,20 @@ export function VisualizerMonitor({
         engineData.highEnergy = highSum / ((bufLen - midEnd) || 1) / 255;
 
         const targetPulse = engineData.bassEnergy;
-        const prevPulse = bassPulseRef.current;
         bassPulseRef.current += (targetPulse - bassPulseRef.current) * 0.35;
 
         const shake = shakeRef.current;
-        if (engineData.bassEnergy > 0.6 && engineData.bassEnergy - prevPulse > 0.15) {
+        if (engineData.bassEnergy > 0.6 && engineData.bassEnergy - targetPulse > 0.15) {
           shake.intensity = engineData.bassEnergy * 8;
         }
         shake.x = (Math.random() - 0.5) * shake.intensity;
         shake.y = (Math.random() - 0.5) * shake.intensity;
         shake.intensity *= 0.88;
-        if (shake.intensity < 0.1) {
-          shake.intensity = 0;
-          shake.x = 0;
-          shake.y = 0;
-        }
+        if (shake.intensity < 0.1) { shake.intensity = 0; shake.x = 0; shake.y = 0; }
       }
 
       timeRef.current += 0.016;
 
-      const shake = shakeRef.current;
       const rc: RenderContext = {
         ctx,
         width: canvas.width,
@@ -138,8 +143,8 @@ export function VisualizerMonitor({
         subText,
         time: timeRef.current,
         bassPulse: bassPulseRef.current,
-        shakeX: shake.x,
-        shakeY: shake.y,
+        shakeX: shakeRef.current.x,
+        shakeY: shakeRef.current.y,
       };
 
       renderFrame(rc);
@@ -147,11 +152,8 @@ export function VisualizerMonitor({
     };
 
     animFrameRef.current = requestAnimationFrame(animate);
-
     return () => cancelAnimationFrame(animFrameRef.current);
-  }, [engine, visualMode, colors, mainText, subText, performanceMode, onCanvasReady]);
-
-  const resolution = `${canvasSize.w}×${canvasSize.h}`;
+  }, [engine, visualMode, colors, mainText, subText, performanceMode, onCanvasReady, onFpsTick]);
 
   return (
     <motion.div
@@ -162,10 +164,7 @@ export function VisualizerMonitor({
       {/* Monitor Header */}
       <div
         className="flex items-center justify-between px-3 py-2 border-b"
-        style={{
-          borderColor: theme.panelBorder,
-          background: `var(--t-panel-gradient, ${theme.panel})`,
-        }}
+        style={{ borderColor: theme.panelBorder, background: `var(--t-panel-gradient, ${theme.panel})` }}
       >
         <div className="flex items-center gap-2">
           <Crosshair className="w-4 h-4" style={{ color: theme.primary }} />
@@ -181,7 +180,7 @@ export function VisualizerMonitor({
             </span>
           </div>
           <span className="text-[9px]" style={{ color: `color-mix(in srgb, ${theme.primary} 40%, transparent)` }}>
-            {resolution}
+            {canvasW}x{canvasH}
           </span>
         </div>
       </div>
@@ -190,10 +189,15 @@ export function VisualizerMonitor({
       <div ref={containerRef} className="flex-1 flex items-center justify-center bg-black relative overflow-hidden">
         <canvas
           ref={canvasRef}
-          width={canvasSize.w}
-          height={canvasSize.h}
+          width={canvasW}
+          height={canvasH}
+          style={{
+            width: displaySize.w,
+            height: displaySize.h,
+            borderColor: theme.panelBorder,
+            borderRadius: 'var(--t-radius)',
+          }}
           className="border"
-          style={{ borderColor: theme.panelBorder, borderRadius: 'var(--t-radius)' }}
         />
       </div>
     </motion.div>

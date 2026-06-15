@@ -39,7 +39,7 @@ export function Header({ isLocked, onToggleLock, appTheme, onAppThemeChange, onM
           className="w-8 h-8 md:w-9 md:h-9 flex items-center justify-center border relative"
           style={{ borderColor: theme.panelBorder, borderRadius: 'var(--t-radius)' }}
         >
-          <img src="/winemp.png" alt="WINEMP" className="w-full h-full object-cover" style={{ borderRadius: 'var(--t-radius)' }} />
+          <img src="/winemp-logo.png" alt="WINEMP" width={32} height={32} className="w-full h-full object-cover" style={{ borderRadius: 'var(--t-radius)' }} />
           <div
             className="absolute inset-0 border animate-pulse"
             style={{ borderColor: `color-mix(in srgb, ${theme.primary} 20%, transparent)`, borderRadius: 'var(--t-radius)' }}

@@ -34,7 +34,7 @@ export function usePlaylist() {
       }));
       trackIdCounter = Math.max(trackIdCounter, ...restored.map((t) => parseInt(t.id.split('-')[1]) || 0));
       setTracks(restored);
-      setCurrentIndex(0);
+      setCurrentIndex(-1);
       setLoaded(true);
     });
   }, []);

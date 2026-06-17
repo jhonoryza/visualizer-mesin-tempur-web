@@ -4,7 +4,7 @@ import { Activity } from 'lucide-react';
 import type { AudioEngine } from '../hooks/useAudioEngine';
 import { renderFrame, type RenderContext } from '../lib/renderer';
 import type { ColorScheme, VisualMode, AspectRatio, ColorPreset, AppTheme, CanvasResolution } from '../types';
-import { COLOR_PRESETS, ASPECT_RATIOS, CANVAS_RESOLUTIONS } from '../types';
+import { COLOR_PRESETS, ASPECT_RATIOS, APP_THEMES, CANVAS_RESOLUTIONS } from '../types';
 
 type PerformanceMode = 'light' | 'balanced' | 'ultra';
 
@@ -34,6 +34,7 @@ export function VisualizerMonitor({
   fps,
   onFpsTick,
   performanceMode,
+  appTheme,
   onCanvasReady,
 }: VisualizerMonitorProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -47,6 +48,7 @@ export function VisualizerMonitor({
   const colors: ColorScheme = COLOR_PRESETS[colorPreset];
   const ratio = ASPECT_RATIOS[aspectRatio];
   const resolution = CANVAS_RESOLUTIONS[canvasResolution];
+  const theme = APP_THEMES[appTheme];
 
   // Canvas renders at resolution (reduced in light mode)
   const resScale = performanceMode === 'light' ? 0.5 : performanceMode === 'balanced' ? 0.75 : 1;
@@ -153,6 +155,8 @@ export function VisualizerMonitor({
         shakeX: shakeRef.current.x,
         shakeY: shakeRef.current.y,
         performanceMode,
+        themePrimary: theme.primary,
+        themeBg: theme.panelBg,
       };
 
       renderFrame(rc);

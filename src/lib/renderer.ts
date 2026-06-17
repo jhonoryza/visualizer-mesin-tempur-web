@@ -15,6 +15,8 @@ export interface RenderContext {
   shakeX: number;
   shakeY: number;
   performanceMode: 'light' | 'balanced' | 'ultra';
+  themePrimary: string;
+  themeBg: string;
 }
 
 // Pre-computed color cache per frame
@@ -505,7 +507,9 @@ function drawBassCannon(rc: RenderContext, cc: ColorCache) {
 
 // === HUD OVERLAY ===
 function drawHUDOverlay(rc: RenderContext, cc: ColorCache) {
-  const { ctx, width, height, mainText, subText, bassPulse, engine } = rc;
+  const { ctx, width, height, mainText, subText, bassPulse, engine, themePrimary } = rc;
+
+  const textColor = themePrimary || cc.primary;
 
   // Info text
   const fontSize = Math.max(10, width * 0.012);
@@ -521,7 +525,7 @@ function drawHUDOverlay(rc: RenderContext, cc: ColorCache) {
   if (mainText) {
     const mainFontSize = Math.max(18, width * 0.035);
     ctx.font = `600 ${mainFontSize}px "Inter", sans-serif`;
-    ctx.fillStyle = cc.primary;
+    ctx.fillStyle = textColor;
     ctx.textAlign = 'center';
     ctx.fillText(mainText, width / 2, height - 40);
   }
@@ -536,10 +540,11 @@ function drawHUDOverlay(rc: RenderContext, cc: ColorCache) {
 
 // === MAIN RENDER ===
 export function renderFrame(rc: RenderContext) {
-  const { ctx, width, height } = rc;
+  const { ctx, width, height, themeBg } = rc;
   const cc = makeColorCache(rc.colors);
 
-  ctx.fillStyle = cc.bg;
+  // Use theme background if it's a light theme, otherwise use color preset bg
+  ctx.fillStyle = themeBg || cc.bg;
   ctx.fillRect(0, 0, width, height);
 
   // Screen shake

@@ -56,7 +56,7 @@ export function Header({ isLocked, onToggleLock, appTheme, onAppThemeChange, onM
             className="text-[7px] md:text-[9px] tracking-[2px] mt-0.5 hidden sm:block"
             style={{ color: `color-mix(in srgb, ${theme.primary} 50%, transparent)` }}
           >
-            TACTICAL AUDIO VISUALIZER & BEAT-SYNC
+            AUDIO VISUALIZER
           </p>
         </div>
       </div>
@@ -69,7 +69,7 @@ export function Header({ isLocked, onToggleLock, appTheme, onAppThemeChange, onM
               key={t}
               className="w-3.5 h-3.5 md:w-4 md:h-4 border transition-all"
               style={{
-                borderRadius: t === 'claude' ? '6px' : t === 'twitter-dark' ? '9999px' : '2px',
+                borderRadius: '6px',
                 backgroundColor: appTheme === t ? APP_THEMES[t].primary : 'transparent',
                 borderColor: APP_THEMES[t].primary,
                 boxShadow: appTheme === t ? `0 0 8px ${APP_THEMES[t].primary}` : 'none',

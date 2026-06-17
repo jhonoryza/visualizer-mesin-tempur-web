@@ -31,7 +31,7 @@ export function StatusBar({ fps, trackName, isPlaying, appTheme }: StatusBarProp
         {[
           { icon: Activity, label: `SYS: ONLINE` },
           { icon: Cpu, label: `GPU: ACTIVE` },
-          { icon: HardDrive, label: `AUDIO: ${isPlaying ? 'STREAMING' : 'STANDBY'}` },
+          { icon: HardDrive, label: `AUDIO: ${isPlaying ? 'PLAYING' : 'PAUSED'}` },
         ].map(({ icon: Icon, label }) => (
           <div key={label} className="flex items-center gap-1" style={{ color: `color-mix(in srgb, ${theme.primary} 50%, transparent)` }}>
             <Icon className="w-3 h-3" />

@@ -128,7 +128,7 @@ export function FireButton({ canvasRef, engineRef, audioDuration, appTheme, trac
     <div className="flex items-center gap-2">
       <div className="relative">
         <button
-          className="military-btn text-[8px] py-1 px-2 flex items-center gap-1"
+          className="app-btn text-[8px] py-1 px-2 flex items-center gap-1"
           onClick={() => setShowSettings(!showSettings)}
         >
           <Download className="w-3 h-3" />
@@ -150,10 +150,10 @@ export function FireButton({ canvasRef, engineRef, audioDuration, appTheme, trac
             {tracks.length > 1 && (
               <>
                 <label className="text-[8px] block mb-1" style={{ color: `color-mix(in srgb, ${theme.primary} 50%, transparent)` }}>
-                  LAGU
+                  TRACK
                 </label>
                 <select
-                  className="military-select w-full mb-2 text-[9px] py-1"
+                  className="app-select w-full mb-2 text-[9px] py-1"
                   value={exportTrackIdx}
                   onChange={(e) => setExportTrackIdx(Number(e.target.value))}
                 >
@@ -165,13 +165,13 @@ export function FireButton({ canvasRef, engineRef, audioDuration, appTheme, trac
             )}
 
             <label className="text-[8px] block mb-1" style={{ color: `color-mix(in srgb, ${theme.primary} 50%, transparent)` }}>
-              DURASI
+              DURATION
             </label>
             <div className="grid grid-cols-3 gap-1 mb-2">
               {([5, 10, 15, 30, 'full'] as ExportDuration[]).map((d) => (
                 <button
                   key={String(d)}
-                  className={`military-btn text-[7px] py-1 px-1 ${exportDuration === d ? 'active' : ''}`}
+                  className={`app-btn text-[7px] py-1 px-1 ${exportDuration === d ? 'active' : ''}`}
                   onClick={() => setExportDuration(d)}
                 >
                   {formatLabel(d)}
@@ -186,7 +186,7 @@ export function FireButton({ canvasRef, engineRef, audioDuration, appTheme, trac
               {(['mp4', 'webm'] as ExportFormat[]).map((f) => (
                 <button
                   key={f}
-                  className={`military-btn flex-1 text-[8px] py-1 ${exportFormat === f ? 'active' : ''}`}
+                  className={`app-btn flex-1 text-[8px] py-1 ${exportFormat === f ? 'active' : ''}`}
                   onClick={() => setExportFormat(f)}
                 >
                   {f.toUpperCase()}
@@ -202,7 +202,7 @@ export function FireButton({ canvasRef, engineRef, audioDuration, appTheme, trac
 
       <div className="relative">
         <button
-          className={`military-btn fire flex items-center gap-2 px-4 py-2 ${isExporting ? 'active' : ''}`}
+          className={`app-btn fire flex items-center gap-2 px-4 py-2 ${isExporting ? 'active' : ''}`}
           onClick={handleFire}
         >
           {isExporting ? (

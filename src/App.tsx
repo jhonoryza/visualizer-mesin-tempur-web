@@ -21,7 +21,7 @@ export default function App() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const playingForTrackRef = useRef<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [appTheme, setAppTheme] = useState<AppTheme>('claude');
+  const [appTheme, setAppTheme] = useState<AppTheme>('dark');
   const [isLocked, setIsLocked] = useState(false);
   const [visualMode, setVisualMode] = useState<VisualMode>('bass-cannon');
   const [colorPreset, setColorPreset] = useState<ColorPreset>('arctic');
@@ -185,7 +185,6 @@ export default function App() {
 
   return (
     <div className="h-screen w-screen flex flex-col bg-black overflow-hidden" data-theme={appTheme}>
-      <div className="scanline" />
 
       <Header
         isLocked={isLocked}
@@ -324,7 +323,7 @@ export default function App() {
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-[#22c55e] animate-pulse" />
               <span className="text-[9px] tracking-[2px] hidden sm:inline" style={{ color: `color-mix(in srgb, ${theme.primary} 40%, transparent)` }}>
-                WEAPONS SYSTEM ARMED
+                SYSTEM READY
               </span>
             </div>
             <FireButton

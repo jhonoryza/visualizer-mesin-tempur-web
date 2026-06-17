@@ -4,7 +4,7 @@ export type AspectRatio = 'landscape' | 'square' | 'vertical';
 export type PerformanceMode = 'light' | 'balanced' | 'ultra';
 export type ExportFormat = 'webm' | 'mp4';
 export type ExportDuration = 5 | 10 | 15 | 30 | 'full';
-export type AppTheme = 'tactical-amber' | 'dark-matter' | 'twitter-dark' | 'claude' | 'neon-tokyo';
+export type AppTheme = 'light' | 'dark' | 'blue' | 'purple' | 'green';
 export type RepeatMode = 'none' | 'one' | 'all' | 'shuffle';
 export type CanvasResolution = '480p' | '720p' | '1080p' | '2k' | '4k';
 
@@ -37,50 +37,50 @@ export interface AppThemeConfig {
 }
 
 export const APP_THEMES: Record<AppTheme, AppThemeConfig> = {
-  'tactical-amber': {
-    name: 'TACTICAL AMBER',
-    label: 'Tactical Amber',
-    primary: '#f59e0b',
-    panel: '#111111',
-    panelBorder: '#f59e0b33',
-    panelBg: '#0a0a0a',
-    glow: '#f59e0b66',
+  'light': {
+    name: 'LIGHT',
+    label: 'Light',
+    primary: '#1a1a2e',
+    panel: '#ffffff',
+    panelBorder: '#e5e7eb',
+    panelBg: '#f9fafb',
+    glow: '#3b82f622',
   },
-  'dark-matter': {
-    name: 'DARK MATTER',
-    label: 'Dark Matter',
-    primary: '#94a3b8',
-    panel: '#0c0f14',
+  'dark': {
+    name: 'DARK',
+    label: 'Dark',
+    primary: '#e2e8f0',
+    panel: '#1e1e2e',
+    panelBorder: '#313244',
+    panelBg: '#181825',
+    glow: '#89b4fa22',
+  },
+  'blue': {
+    name: 'BLUE',
+    label: 'Blue',
+    primary: '#3b82f6',
+    panel: '#0f172a',
     panelBorder: '#1e293b',
-    panelBg: '#0f1318',
-    glow: '#47556944',
+    panelBg: '#0f172a',
+    glow: '#3b82f633',
   },
-  'twitter-dark': {
-    name: 'TWITTER DARK',
-    label: 'Twitter Dark',
-    primary: '#1d9bf0',
-    panel: '#16181c',
-    panelBorder: '#2f3336',
-    panelBg: '#16181c',
-    glow: '#1d9bf044',
+  'purple': {
+    name: 'PURPLE',
+    label: 'Purple',
+    primary: '#a855f7',
+    panel: '#1a1025',
+    panelBorder: '#2e1f47',
+    panelBg: '#150d20',
+    glow: '#a855f733',
   },
-  'claude': {
-    name: 'CLAUDE DARK',
-    label: 'Claude Dark',
-    primary: '#e8b878',
-    panel: '#1a1814',
-    panelBorder: '#4a3f30',
-    panelBg: '#1f1c17',
-    glow: '#e8b87855',
-  },
-  'neon-tokyo': {
-    name: 'NEON TOKYO',
-    label: 'Neon Tokyo',
-    primary: '#f472b6',
-    panel: '#0a0612',
-    panelBorder: '#f472b644',
-    panelBg: '#0c0818',
-    glow: '#f472b688',
+  'green': {
+    name: 'GREEN',
+    label: 'Green',
+    primary: '#22c55e',
+    panel: '#0f1a14',
+    panelBorder: '#1a3a28',
+    panelBg: '#0c1510',
+    glow: '#22c55e33',
   },
 };
 

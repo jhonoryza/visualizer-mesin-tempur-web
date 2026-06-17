@@ -1,6 +1,6 @@
 import { useRef, useEffect, useCallback, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Crosshair } from 'lucide-react';
+import { Activity } from 'lucide-react';
 import type { AudioEngine } from '../hooks/useAudioEngine';
 import { renderFrame, type RenderContext } from '../lib/renderer';
 import type { ColorScheme, VisualMode, AspectRatio, ColorPreset, AppTheme, CanvasResolution } from '../types';
@@ -176,9 +176,9 @@ export function VisualizerMonitor({
         style={{ borderColor: theme.panelBorder, background: `var(--t-panel-gradient, ${theme.panel})` }}
       >
         <div className="flex items-center gap-2">
-          <Crosshair className="w-4 h-4" style={{ color: theme.primary }} />
+          <Activity className="w-4 h-4" style={{ color: theme.primary }} />
           <span className="text-[10px] tracking-[2px]" style={{ color: `color-mix(in srgb, ${theme.primary} 80%, transparent)` }}>
-            TACTICAL WEAPONS MONITOR HUD
+            VISUALIZER
           </span>
         </div>
         <div className="flex items-center gap-3">

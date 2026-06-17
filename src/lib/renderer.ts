@@ -501,100 +501,36 @@ function drawBassCannon(rc: RenderContext, cc: ColorCache) {
     ctx.strokeStyle = cc.aAlpha(val * 0.7);
     ctx.stroke();
   }
-
-  // Corner brackets
-  const bSize = 35;
-  ctx.strokeStyle = cc.aAlpha(0.5);
-  ctx.lineWidth = 2;
-  const corners = [
-    [25, 25, 1, 1], [width - 25, 25, -1, 1],
-    [25, height - 25, 1, -1], [width - 25, height - 25, -1, -1],
-  ];
-  for (const [bx, by, dx, dy] of corners) {
-    ctx.beginPath();
-    ctx.moveTo(bx, by + bSize * dy);
-    ctx.lineTo(bx, by);
-    ctx.lineTo(bx + bSize * dx, by);
-    ctx.stroke();
-  }
 }
 
 // === HUD OVERLAY ===
 function drawHUDOverlay(rc: RenderContext, cc: ColorCache) {
   const { ctx, width, height, mainText, subText, bassPulse, engine } = rc;
 
-  // Corner brackets
-  const bSize = 30;
-  ctx.strokeStyle = cc.pAlpha(0.5);
-  ctx.lineWidth = 1.2;
-  const corners = [
-    [12, 12, 1, 1], [width - 12, 12, -1, 1],
-    [12, height - 12, 1, -1], [width - 12, height - 12, -1, -1],
-  ];
-  for (const c of corners) {
-    ctx.beginPath();
-    ctx.moveTo(c[0], c[1] + bSize * c[3]);
-    ctx.lineTo(c[0], c[1]);
-    ctx.lineTo(c[0] + bSize * c[2], c[1]);
-    ctx.stroke();
-  }
-
   // Info text
-  const fontSize = Math.max(8, width * 0.012);
-  ctx.font = `${fontSize}px "Share Tech Mono", monospace`;
+  const fontSize = Math.max(10, width * 0.012);
+  ctx.font = `${fontSize}px "Inter", sans-serif`;
   ctx.textAlign = 'left';
-  ctx.fillStyle = cc.pAlpha(0.25);
+  ctx.fillStyle = cc.pAlpha(0.3);
   ctx.fillText(`B:${(engine.bassEnergy * 100).toFixed(0)} M:${(engine.midEnergy * 100).toFixed(0)} H:${(engine.highEnergy * 100).toFixed(0)}`, 16, 24);
 
   ctx.textAlign = 'right';
-  ctx.fillText(`PK:${(engine.peak * 100).toFixed(0)} PL:${(bassPulse * 100).toFixed(0)}`, width - 16, 24);
+  ctx.fillText(`Peak:${(engine.peak * 100).toFixed(0)} Pulse:${(bassPulse * 100).toFixed(0)}`, width - 16, 24);
 
   // Main text
   if (mainText) {
-    const mainFontSize = Math.max(16, width * 0.035);
-    ctx.font = `bold ${mainFontSize}px "Share Tech Mono", monospace`;
+    const mainFontSize = Math.max(18, width * 0.035);
+    ctx.font = `600 ${mainFontSize}px "Inter", sans-serif`;
     ctx.fillStyle = cc.primary;
     ctx.textAlign = 'center';
     ctx.fillText(mainText, width / 2, height - 40);
-
-    const textW = ctx.measureText(mainText).width;
-    ctx.beginPath();
-    ctx.moveTo(width / 2 - textW / 2, height - 34);
-    ctx.lineTo(width / 2 + textW / 2, height - 34);
-    ctx.strokeStyle = cc.pAlpha(0.4);
-    ctx.lineWidth = 0.8;
-    ctx.stroke();
   }
 
   if (subText) {
-    ctx.font = `${Math.max(9, width * 0.015)}px "Share Tech Mono", monospace`;
+    ctx.font = `${Math.max(10, width * 0.015)}px "Inter", sans-serif`;
     ctx.fillStyle = cc.pAlpha(0.5);
     ctx.textAlign = 'center';
     ctx.fillText(subText, width / 2, height - 18);
-  }
-}
-
-// === CRT OVERLAY (simplified) ===
-function drawCRTOverlay(ctx: CanvasRenderingContext2D, w: number, h: number, time: number) {
-  // Scanlines — draw once via pattern
-  ctx.fillStyle = 'rgba(0,0,0,0.03)';
-  for (let y = 0; y < h; y += 4) {
-    ctx.fillRect(0, y, w, 1);
-  }
-
-  // Moving scan bar
-  const scanY = ((time * 60) % (h + 40)) - 20;
-  const scanGrad = ctx.createLinearGradient(0, scanY - 20, 0, scanY + 20);
-  scanGrad.addColorStop(0, 'rgba(255,255,255,0)');
-  scanGrad.addColorStop(0.5, 'rgba(255,255,255,0.02)');
-  scanGrad.addColorStop(1, 'rgba(255,255,255,0)');
-  ctx.fillStyle = scanGrad;
-  ctx.fillRect(0, scanY - 20, w, 40);
-
-  // Noise — reduced count
-  for (let i = 0; i < 30; i++) {
-    ctx.fillStyle = `rgba(255,255,255,${Math.random() * 0.04})`;
-    ctx.fillRect(Math.random() * w, Math.random() * h, 1, 1);
   }
 }
 
@@ -627,7 +563,4 @@ export function renderFrame(rc: RenderContext) {
   drawHUDOverlay(rc, cc);
 
   if (hasShake) ctx.restore();
-
-  // CRT
-  drawCRTOverlay(ctx, width, height, rc.time);
 }

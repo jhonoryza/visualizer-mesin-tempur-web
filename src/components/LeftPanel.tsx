@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Upload, Trash2, Play, X, ListMusic, Target, Radar, AudioLines, Sparkles, Bomb } from 'lucide-react';
+import { Upload, Trash2, Play, X, ListMusic, Target, Radar, AudioLines, Sparkles, Zap } from 'lucide-react';
 import type { VisualMode, ColorPreset, AspectRatio, PerformanceMode, AppTheme, Track, RepeatMode, CanvasResolution } from '../types';
 import { COLOR_PRESETS, APP_THEMES, CANVAS_RESOLUTIONS } from '../types';
 
@@ -109,11 +109,11 @@ export function LeftPanel({
   );
 
   const visualModes: { value: VisualMode; label: string; Icon: typeof Target }[] = [
-    { value: 'circular-target', label: 'Circular Target', Icon: Target },
+    { value: 'circular-target', label: 'Circular', Icon: Target },
     { value: 'radar', label: 'Radar', Icon: Radar },
     { value: 'waveform', label: 'Waveform', Icon: AudioLines },
     { value: 'particle', label: 'Particle', Icon: Sparkles },
-    { value: 'bass-cannon', label: 'Bass Cannon', Icon: Bomb },
+    { value: 'bass-cannon', label: 'Bass Drop', Icon: Zap },
   ];
 
   const colorPresets: { value: ColorPreset; label: string; preview: string }[] = [
@@ -143,7 +143,7 @@ export function LeftPanel({
       <motion.div
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
-        className="hud-panel glow-border p-3"
+        className="app-panel glow-border p-3"
       >
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
@@ -154,7 +154,7 @@ export function LeftPanel({
           </div>
           <div className="flex items-center gap-1">
             <button
-              className="military-btn text-[8px] py-0.5 px-1.5"
+              className="app-btn text-[8px] py-0.5 px-1.5"
               onClick={onCycleRepeat}
               title={`Repeat: ${repeatMode}`}
             >
@@ -179,7 +179,7 @@ export function LeftPanel({
           <input ref={fileInputRef} type="file" accept=".mp3,.wav,.m4a,.ogg,.flac,.aac" multiple className="hidden" onChange={handleFileInput} />
           <Upload className="w-5 h-5 mx-auto mb-1" style={{ color: `color-mix(in srgb, ${theme.primary} 50%, transparent)` }} />
           <p className="text-[9px] tracking-[1px]" style={{ color: `color-mix(in srgb, ${theme.primary} 50%, transparent)` }}>
-            + TAMBAH LAGU (BISA BANYAK)
+            + Add Music (Multiple Files)
           </p>
         </div>
 
@@ -226,19 +226,19 @@ export function LeftPanel({
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.03 }}
-        className="hud-panel glow-border p-3"
+        className="app-panel glow-border p-3"
       >
-        <SectionLabel title="MODE PERFORMA PERANGKAT" />
+        <SectionLabel title="PERFORMANCE MODE" />
         <select
-          className="military-select w-full"
+          className="app-select w-full"
           value={performanceMode}
           onChange={(e) => onPerformanceModeChange(e.target.value as PerformanceMode)}
           disabled={isLocked}
         >
           {[
-            { value: 'light', label: 'HP / Spek Ringan (FPS Stabil)' },
+            { value: 'light', label: 'Light (Stable FPS)' },
             { value: 'balanced', label: 'Balanced' },
-            { value: 'ultra', label: 'Ultra Visual' },
+            { value: 'ultra', label: 'Ultra Quality' },
           ].map((m) => (
             <option key={m.value} value={m.value}>{m.label}</option>
           ))}
@@ -250,20 +250,20 @@ export function LeftPanel({
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.06 }}
-        className="hud-panel glow-border p-3"
+        className="app-panel glow-border p-3"
       >
-        <SectionLabel num={1} title="KONFIGURASI MERIAM" />
+        <SectionLabel num={1} title="VISUAL SETTINGS" />
 
         <div className="space-y-3">
           <div>
             <label className="text-[9px] tracking-wider block mb-1" style={{ color: `color-mix(in srgb, ${theme.primary} 50%, transparent)` }}>
-              TIPE MERIAM
+              VISUAL MODE
             </label>
             <div className="grid grid-cols-3 gap-1">
               {visualModes.map((m) => (
                 <button
                   key={m.value}
-                  className={`military-btn text-[8px] py-1.5 px-1 flex flex-col items-center gap-0.5 ${visualMode === m.value ? 'active' : ''}`}
+                  className={`app-btn text-[8px] py-1.5 px-1 flex flex-col items-center gap-0.5 ${visualMode === m.value ? 'active' : ''}`}
                   onClick={() => onVisualModeChange(m.value)}
                   disabled={isLocked}
                 >
@@ -276,13 +276,13 @@ export function LeftPanel({
 
           <div>
             <label className="text-[9px] tracking-wider block mb-1" style={{ color: `color-mix(in srgb, ${theme.primary} 50%, transparent)` }}>
-              PRESET WARNA
+              COLOR PRESET
             </label>
             <div className="grid grid-cols-4 gap-1">
               {colorPresets.map((p) => (
                 <button
                   key={p.value}
-                  className={`military-btn text-[8px] py-1.5 px-1 flex flex-col items-center gap-1 ${colorPreset === p.value ? 'active' : ''}`}
+                  className={`app-btn text-[8px] py-1.5 px-1 flex flex-col items-center gap-1 ${colorPreset === p.value ? 'active' : ''}`}
                   onClick={() => onColorPresetChange(p.value)}
                   disabled={isLocked}
                 >
@@ -302,7 +302,7 @@ export function LeftPanel({
 
           <div>
             <label className="text-[9px] tracking-wider block mb-1" style={{ color: `color-mix(in srgb, ${theme.primary} 50%, transparent)` }}>
-              RATIO MONITOR
+              ASPECT RATIO
             </label>
             <div className="flex gap-1">
               {([
@@ -312,7 +312,7 @@ export function LeftPanel({
               ] as { value: AspectRatio; label: string }[]).map((r) => (
                 <button
                   key={r.value}
-                  className={`military-btn flex-1 text-[9px] py-1 ${aspectRatio === r.value ? 'active' : ''}`}
+                  className={`app-btn flex-1 text-[9px] py-1 ${aspectRatio === r.value ? 'active' : ''}`}
                   onClick={() => onAspectRatioChange(r.value)}
                   disabled={isLocked}
                 >
@@ -324,13 +324,13 @@ export function LeftPanel({
 
           <div>
             <label className="text-[9px] tracking-wider block mb-1" style={{ color: `color-mix(in srgb, ${theme.primary} 50%, transparent)` }}>
-              RESOLUSI OUTPUT
+              OUTPUT RESOLUTION
             </label>
             <div className="flex gap-1 flex-wrap">
               {(Object.keys(CANVAS_RESOLUTIONS) as CanvasResolution[]).map((r) => (
                 <button
                   key={r}
-                  className={`military-btn text-[8px] py-1 px-1.5 ${canvasResolution === r ? 'active' : ''}`}
+                  className={`app-btn text-[8px] py-1 px-1.5 ${canvasResolution === r ? 'active' : ''}`}
                   onClick={() => onCanvasResolutionChange(r)}
                   disabled={isLocked}
                 >
@@ -342,12 +342,12 @@ export function LeftPanel({
 
           <div>
             <label className="text-[9px] tracking-wider block mb-1" style={{ color: `color-mix(in srgb, ${theme.primary} 50%, transparent)` }}>
-              TEXT UTAMA
+              MAIN TEXT
             </label>
             <input
               type="text"
-              className="military-input w-full"
-              placeholder="MASUKKAN TEXT..."
+              className="app-input w-full"
+              placeholder="Enter text..."
               value={mainText}
               onChange={(e) => onMainTextChange(e.target.value)}
               disabled={isLocked}
@@ -356,12 +356,12 @@ export function LeftPanel({
 
           <div>
             <label className="text-[9px] tracking-wider block mb-1" style={{ color: `color-mix(in srgb, ${theme.primary} 50%, transparent)` }}>
-              TEXT SUB JUDUL
+              SUBTITLE TEXT
             </label>
             <input
               type="text"
-              className="military-input w-full"
-              placeholder="MASUKKAN SUB JUDUL..."
+              className="app-input w-full"
+              placeholder="Enter subtitle..."
               value={subText}
               onChange={(e) => onSubTextChange(e.target.value)}
               disabled={isLocked}
@@ -375,21 +375,21 @@ export function LeftPanel({
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.09 }}
-        className="hud-panel glow-border p-3"
+        className="app-panel glow-border p-3"
       >
-        <SectionLabel title="TEMA APLIKASI" />
+        <SectionLabel title="APP THEME" />
         <div className="grid grid-cols-5 gap-1">
           {(Object.keys(APP_THEMES) as AppTheme[]).map((t) => (
             <button
               key={t}
-              className={`military-btn text-[7px] py-1.5 px-1 flex flex-col items-center gap-1 ${appTheme === t ? 'active' : ''}`}
+              className={`app-btn text-[7px] py-1.5 px-1 flex flex-col items-center gap-1 ${appTheme === t ? 'active' : ''}`}
               onClick={() => onAppThemeChange(t)}
             >
               <div
                 className="w-3 h-3 flex-shrink-0"
                 style={{
                   backgroundColor: APP_THEMES[t].primary,
-                  borderRadius: t === 'claude' ? '6px' : t === 'twitter-dark' ? '9999px' : '2px',
+                  borderRadius: '6px',
                   boxShadow: appTheme === t ? `0 0 8px ${APP_THEMES[t].primary}` : 'none',
                 }}
               />

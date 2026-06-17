@@ -14,8 +14,6 @@ interface VisualizerMonitorProps {
   colorPreset: ColorPreset;
   aspectRatio: AspectRatio;
   canvasResolution: CanvasResolution;
-  mainText: string;
-  subText: string;
   fps: number;
   onFpsTick: () => void;
   performanceMode: PerformanceMode;
@@ -29,8 +27,6 @@ export function VisualizerMonitor({
   colorPreset,
   aspectRatio,
   canvasResolution,
-  mainText,
-  subText,
   fps,
   onFpsTick,
   performanceMode,
@@ -148,15 +144,13 @@ export function VisualizerMonitor({
         engine: engineData,
         colors,
         mode: visualMode,
-        mainText,
-        subText,
         time: timeRef.current,
         bassPulse: bassPulseRef.current,
         shakeX: shakeRef.current.x,
         shakeY: shakeRef.current.y,
         performanceMode,
         themePrimary: theme.primary,
-        themeBg: theme.panelBg,
+        isLightTheme: appTheme.endsWith('-light'),
       };
 
       renderFrame(rc);
@@ -164,7 +158,7 @@ export function VisualizerMonitor({
 
     animFrameRef.current = requestAnimationFrame(animate);
     return () => cancelAnimationFrame(animFrameRef.current);
-  }, [engine, visualMode, colors, mainText, subText, performanceMode, onCanvasReady, onFpsTick]);
+  }, [engine, visualMode, colors, performanceMode, onCanvasReady, onFpsTick]);
 
   return (
     <motion.div

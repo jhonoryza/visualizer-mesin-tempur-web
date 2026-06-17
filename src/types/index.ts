@@ -1,4 +1,4 @@
-export type VisualMode = 'circular-target' | 'radar' | 'waveform' | 'particle' | 'bass-cannon';
+export type VisualMode = 'circular-target' | 'radar' | 'waveform' | 'particle' | 'bass-cannon' | 'neon-grid' | 'dna-helix' | 'wave-tunnel' | 'starburst' | 'pulse-rings' | 'lava-lamp' | 'glitch' | 'spiral' | 'hexagon' | 'matrix-rain' | 'aurora' | 'orbit' | 'wave-bars' | 'ripple' | 'heartbeat' | 'mosaic' | 'fractal';
 export type ColorPreset = 'hazard' | 'cyber' | 'matrix' | 'plasma' | 'blood' | 'arctic' | 'phantom';
 export type AspectRatio = 'landscape' | 'square' | 'vertical';
 export type PerformanceMode = 'light' | 'balanced' | 'ultra';

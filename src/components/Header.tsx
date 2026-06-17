@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion';
 import { Lock, Menu, Sun, Moon } from 'lucide-react';
 import type { AppTheme, ThemeName, ThemeMode } from '../types';
-import { APP_THEMES, THEME_NAMES } from '../types';
 
 interface HeaderProps {
   isLocked: boolean;
@@ -13,7 +12,6 @@ interface HeaderProps {
 }
 
 export function Header({ isLocked, onToggleLock, appTheme, onAppThemeChange, onMenuToggle }: HeaderProps) {
-  // Parse current theme name and mode
   const parts = appTheme.split('-');
   const currentName = parts.slice(0, -1).join('-') as ThemeName;
   const currentMode = parts[parts.length - 1] as ThemeMode;
@@ -22,8 +20,6 @@ export function Header({ isLocked, onToggleLock, appTheme, onAppThemeChange, onM
     const newMode: ThemeMode = currentMode === 'dark' ? 'light' : 'dark';
     onAppThemeChange(`${currentName}-${newMode}`);
   };
-
-  const themeNames = Object.keys(THEME_NAMES) as ThemeName[];
 
   return (
     <motion.header
@@ -72,31 +68,6 @@ export function Header({ isLocked, onToggleLock, appTheme, onAppThemeChange, onM
       </div>
 
       <div className="flex items-center gap-2 md:gap-3">
-        {/* Theme selector */}
-        <div className="hidden sm:flex items-center gap-1">
-          {themeNames.map((name) => {
-            const isActive = currentName === name;
-            const themeKey = `${name}-${currentMode}` as AppTheme;
-            const config = APP_THEMES[themeKey];
-            return (
-              <button
-                key={name}
-                className="h-6 px-2 text-[9px] font-medium transition-all"
-                style={{
-                  borderRadius: 'var(--radius)',
-                  backgroundColor: isActive ? config.primary : 'transparent',
-                  color: isActive ? config.panelBg : 'var(--muted-foreground)',
-                  border: `1px solid ${isActive ? config.primary : 'transparent'}`,
-                }}
-                onClick={() => onAppThemeChange(themeKey)}
-                title={THEME_NAMES[name]}
-              >
-                {THEME_NAMES[name]}
-              </button>
-            );
-          })}
-        </div>
-
         {/* Light/Dark toggle */}
         <button
           onClick={toggleMode}

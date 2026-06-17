@@ -36,8 +36,6 @@ export default function App() {
   );
   const [canvasResolution, setCanvasResolution] = useState<CanvasResolution>(() => loadKey('canvasResolution', '480p'));
   const [performanceMode, setPerformanceMode] = useState<PerformanceMode>(() => loadKey('performanceMode', 'balanced'));
-  const [mainText, setMainText] = useState(() => loadKey('mainText', 'WINEMP'));
-  const [subText, setSubText] = useState(() => loadKey('subText', 'AUDIO VISUALIZER'));
   const [isDragging, setIsDragging] = useState(false);
   const [dragTime, setDragTime] = useState(0);
 
@@ -49,8 +47,6 @@ export default function App() {
   useEffect(() => { localStorage.setItem('aspectRatio', JSON.stringify(aspectRatio)); }, [aspectRatio]);
   useEffect(() => { localStorage.setItem('canvasResolution', JSON.stringify(canvasResolution)); }, [canvasResolution]);
   useEffect(() => { localStorage.setItem('performanceMode', JSON.stringify(performanceMode)); }, [performanceMode]);
-  useEffect(() => { localStorage.setItem('mainText', JSON.stringify(mainText)); }, [mainText]);
-  useEffect(() => { localStorage.setItem('subText', JSON.stringify(subText)); }, [subText]);
 
   const engineRef = audio.engine;
   const trackId = playlist.currentTrack?.id ?? null;
@@ -231,10 +227,6 @@ export default function App() {
             onAspectRatioChange={setAspectRatio}
             canvasResolution={canvasResolution}
             onCanvasResolutionChange={setCanvasResolution}
-            mainText={mainText}
-            onMainTextChange={setMainText}
-            subText={subText}
-            onSubTextChange={setSubText}
             onFilesLoad={handleFilesLoad}
             isLocked={isLocked}
             appTheme={appTheme}
@@ -258,8 +250,6 @@ export default function App() {
               colorPreset={colorPreset}
               aspectRatio={aspectRatio}
               canvasResolution={canvasResolution}
-              mainText={mainText}
-              subText={subText}
               fps={fps}
               onFpsTick={tick}
               performanceMode={performanceMode}

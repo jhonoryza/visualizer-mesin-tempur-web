@@ -1,6 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Upload, Trash2, Play, X, ListMusic, Target, Radar, AudioLines, Sparkles, Zap, Sun, Moon } from 'lucide-react';
+import { Upload, Trash2, Play, X, ListMusic, Target, Radar, AudioLines, Sparkles, Zap, Sun, Moon, Grid3x3, Dna, Orbit, Star, Circle, Droplets, Bug, Hexagon, TreePine, Heart, LayoutGrid, Fingerprint, Columns3, Wind, Activity } from 'lucide-react';
 import type { VisualMode, ColorPreset, AspectRatio, PerformanceMode, AppTheme, ThemeName, ThemeMode, Track, RepeatMode, CanvasResolution } from '../types';
 import { COLOR_PRESETS, APP_THEMES, THEME_NAMES, CANVAS_RESOLUTIONS } from '../types';
 
@@ -15,10 +15,6 @@ interface LeftPanelProps {
   onAspectRatioChange: (a: AspectRatio) => void;
   canvasResolution: CanvasResolution;
   onCanvasResolutionChange: (r: CanvasResolution) => void;
-  mainText: string;
-  onMainTextChange: (t: string) => void;
-  subText: string;
-  onSubTextChange: (t: string) => void;
   onFilesLoad: (files: File[]) => void;
   isLocked: boolean;
   appTheme: AppTheme;
@@ -44,10 +40,6 @@ export function LeftPanel({
   onAspectRatioChange,
   canvasResolution,
   onCanvasResolutionChange,
-  mainText,
-  onMainTextChange,
-  subText,
-  onSubTextChange,
   onFilesLoad,
   isLocked,
   appTheme,
@@ -108,11 +100,28 @@ export function LeftPanel({
   );
 
   const visualModes: { value: VisualMode; label: string; Icon: typeof Target }[] = [
-    { value: 'circular-target', label: 'Circular', Icon: Target },
+    { value: 'circular-target', label: 'Target', Icon: Target },
     { value: 'radar', label: 'Radar', Icon: Radar },
-    { value: 'waveform', label: 'Waveform', Icon: AudioLines },
+    { value: 'waveform', label: 'Wave', Icon: AudioLines },
     { value: 'particle', label: 'Particle', Icon: Sparkles },
     { value: 'bass-cannon', label: 'Bass Drop', Icon: Zap },
+    { value: 'neon-grid', label: 'Neon Grid', Icon: Grid3x3 },
+    { value: 'dna-helix', label: 'DNA', Icon: Dna },
+    { value: 'wave-tunnel', label: 'Tunnel', Icon: Orbit },
+    { value: 'starburst', label: 'Starburst', Icon: Star },
+    { value: 'pulse-rings', label: 'Pulse', Icon: Circle },
+    { value: 'lava-lamp', label: 'Lava', Icon: Droplets },
+    { value: 'glitch', label: 'Glitch', Icon: Bug },
+    { value: 'spiral', label: 'Spiral', Icon: Fingerprint },
+    { value: 'hexagon', label: 'Hexagon', Icon: Hexagon },
+    { value: 'matrix-rain', label: 'Matrix', Icon: Columns3 },
+    { value: 'aurora', label: 'Aurora', Icon: Wind },
+    { value: 'orbit', label: 'Orbit', Icon: Orbit },
+    { value: 'wave-bars', label: 'Bars', Icon: LayoutGrid },
+    { value: 'ripple', label: 'Ripple', Icon: Activity },
+    { value: 'heartbeat', label: 'Heartbeat', Icon: Heart },
+    { value: 'mosaic', label: 'Mosaic', Icon: Sparkles },
+    { value: 'fractal', label: 'Fractal', Icon: TreePine },
   ];
 
   const colorPresets: { value: ColorPreset; label: string; preview: string }[] = [
@@ -337,34 +346,6 @@ export function LeftPanel({
                 </button>
               ))}
             </div>
-          </div>
-
-          <div>
-            <label className="text-[9px] tracking-wider block mb-1" style={{ color: 'var(--muted-foreground)' }}>
-              MAIN TEXT
-            </label>
-            <input
-              type="text"
-              className="app-input w-full"
-              placeholder="Enter text..."
-              value={mainText}
-              onChange={(e) => onMainTextChange(e.target.value)}
-              disabled={isLocked}
-            />
-          </div>
-
-          <div>
-            <label className="text-[9px] tracking-wider block mb-1" style={{ color: 'var(--muted-foreground)' }}>
-              SUBTITLE TEXT
-            </label>
-            <input
-              type="text"
-              className="app-input w-full"
-              placeholder="Enter subtitle..."
-              value={subText}
-              onChange={(e) => onSubTextChange(e.target.value)}
-              disabled={isLocked}
-            />
           </div>
         </div>
       </motion.div>

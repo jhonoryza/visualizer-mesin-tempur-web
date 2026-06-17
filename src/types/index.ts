@@ -4,9 +4,12 @@ export type AspectRatio = 'landscape' | 'square' | 'vertical';
 export type PerformanceMode = 'light' | 'balanced' | 'ultra';
 export type ExportFormat = 'webm' | 'mp4';
 export type ExportDuration = 5 | 10 | 15 | 30 | 'full';
-export type AppTheme = 'light' | 'dark' | 'blue' | 'purple' | 'green';
 export type RepeatMode = 'none' | 'one' | 'all' | 'shuffle';
 export type CanvasResolution = '480p' | '720p' | '1080p' | '2k' | '4k';
+
+export type ThemeName = 'darkmatter' | 'claude' | 'minimal' | 'vercel' | 'supabase' | 'amethyst' | 'whatsapp' | 'shark' | 'domo' | 'zenshin' | 'coldstream' | 'awesome';
+export type ThemeMode = 'light' | 'dark';
+export type AppTheme = `${ThemeName}-${ThemeMode}`;
 
 export interface Track {
   id: string;
@@ -36,51 +39,260 @@ export interface AppThemeConfig {
   glow: string;
 }
 
+export const THEME_NAMES: Record<ThemeName, string> = {
+  darkmatter: 'Dark Matter',
+  claude: 'Claude',
+  minimal: 'Minimal',
+  vercel: 'Vercel',
+  supabase: 'Supabase',
+  amethyst: 'Amethyst',
+  whatsapp: 'WhatsApp',
+  shark: 'Shark',
+  domo: 'Domo',
+  zenshin: 'Zenshin',
+  coldstream: 'Coldstream',
+  awesome: 'Awesome',
+};
+
 export const APP_THEMES: Record<AppTheme, AppThemeConfig> = {
-  'light': {
-    name: 'LIGHT',
-    label: 'Light',
-    primary: '#1a1a2e',
+  // ========== DARK MATTER ==========
+  'darkmatter-light': {
+    name: 'DARK MATTER',
+    label: 'Dark Matter',
+    primary: '#374151',
     panel: '#ffffff',
     panelBorder: '#e5e7eb',
     panelBg: '#f9fafb',
-    glow: '#3b82f622',
+    glow: '#6366f122',
   },
-  'dark': {
-    name: 'DARK',
-    label: 'Dark',
-    primary: '#e2e8f0',
-    panel: '#1e1e2e',
-    panelBorder: '#313244',
-    panelBg: '#181825',
-    glow: '#89b4fa22',
+  'darkmatter-dark': {
+    name: 'DARK MATTER',
+    label: 'Dark Matter',
+    primary: '#c7d2fe',
+    panel: '#0f1023',
+    panelBorder: '#1e1b4b',
+    panelBg: '#0a0b1a',
+    glow: '#6366f144',
   },
-  'blue': {
-    name: 'BLUE',
-    label: 'Blue',
-    primary: '#3b82f6',
-    panel: '#0f172a',
-    panelBorder: '#1e293b',
-    panelBg: '#0f172a',
-    glow: '#3b82f633',
+
+  // ========== CLAUDE ==========
+  'claude-light': {
+    name: 'CLAUDE',
+    label: 'Claude',
+    primary: '#92400e',
+    panel: '#fffbeb',
+    panelBorder: '#fde68a',
+    panelBg: '#fef3c7',
+    glow: '#f59e0b22',
   },
-  'purple': {
-    name: 'PURPLE',
-    label: 'Purple',
-    primary: '#a855f7',
-    panel: '#1a1025',
-    panelBorder: '#2e1f47',
-    panelBg: '#150d20',
-    glow: '#a855f733',
+  'claude-dark': {
+    name: 'CLAUDE',
+    label: 'Claude',
+    primary: '#fcd34d',
+    panel: '#1c1917',
+    panelBorder: '#44403c',
+    panelBg: '#1a1816',
+    glow: '#f59e0b44',
   },
-  'green': {
-    name: 'GREEN',
-    label: 'Green',
-    primary: '#22c55e',
-    panel: '#0f1a14',
+
+  // ========== MODERN MINIMAL ==========
+  'minimal-light': {
+    name: 'MINIMAL',
+    label: 'Minimal',
+    primary: '#171717',
+    panel: '#ffffff',
+    panelBorder: '#e5e5e5',
+    panelBg: '#fafafa',
+    glow: '#00000010',
+  },
+  'minimal-dark': {
+    name: 'MINIMAL',
+    label: 'Minimal',
+    primary: '#f5f5f5',
+    panel: '#0a0a0a',
+    panelBorder: '#262626',
+    panelBg: '#111111',
+    glow: '#ffffff10',
+  },
+
+  // ========== VERCEL ==========
+  'vercel-light': {
+    name: 'VERCEL',
+    label: 'Vercel',
+    primary: '#000000',
+    panel: '#ffffff',
+    panelBorder: '#eaeaea',
+    panelBg: '#fafafa',
+    glow: '#00000015',
+  },
+  'vercel-dark': {
+    name: 'VERCEL',
+    label: 'Vercel',
+    primary: '#ededed',
+    panel: '#000000',
+    panelBorder: '#333333',
+    panelBg: '#0a0a0a',
+    glow: '#ffffff20',
+  },
+
+  // ========== SUPABASE ==========
+  'supabase-light': {
+    name: 'SUPABASE',
+    label: 'Supabase',
+    primary: '#1a1a2e',
+    panel: '#ffffff',
+    panelBorder: '#d1fae5',
+    panelBg: '#ecfdf5',
+    glow: '#10b98122',
+  },
+  'supabase-dark': {
+    name: 'SUPABASE',
+    label: 'Supabase',
+    primary: '#6ee7b7',
+    panel: '#0a1a14',
+    panelBorder: '#064e3b',
+    panelBg: '#061f16',
+    glow: '#10b98144',
+  },
+
+  // ========== AMETHYST ==========
+  'amethyst-light': {
+    name: 'AMETHYST',
+    label: 'Amethyst',
+    primary: '#581c87',
+    panel: '#ffffff',
+    panelBorder: '#e9d5ff',
+    panelBg: '#faf5ff',
+    glow: '#a855f722',
+  },
+  'amethyst-dark': {
+    name: 'AMETHYST',
+    label: 'Amethyst',
+    primary: '#d8b4fe',
+    panel: '#130a1f',
+    panelBorder: '#3b0764',
+    panelBg: '#0f0818',
+    glow: '#a855f744',
+  },
+
+  // ========== WHATSAPP ==========
+  'whatsapp-light': {
+    name: 'WHATSAPP',
+    label: 'WhatsApp',
+    primary: '#075e54',
+    panel: '#ffffff',
+    panelBorder: '#d1fae5',
+    panelBg: '#f0fdf4',
+    glow: '#25d36622',
+  },
+  'whatsapp-dark': {
+    name: 'WHATSAPP',
+    label: 'WhatsApp',
+    primary: '#25d366',
+    panel: '#0b1a14',
     panelBorder: '#1a3a28',
-    panelBg: '#0c1510',
-    glow: '#22c55e33',
+    panelBg: '#081510',
+    glow: '#25d36644',
+  },
+
+  // ========== SHARK ==========
+  'shark-light': {
+    name: 'SHARK',
+    label: 'Shark',
+    primary: '#1a4d8c',
+    panel: '#fcfcfc',
+    panelBorder: '#000000',
+    panelBg: '#f1f1f1',
+    glow: '#66666622',
+  },
+  'shark-dark': {
+    name: 'SHARK',
+    label: 'Shark',
+    primary: '#7b5cf6',
+    panel: '#3f3f6c',
+    panelBorder: '#727272',
+    panelBg: '#000000',
+    glow: '#7b5cf644',
+  },
+
+  // ========== DOMO ==========
+  'domo-light': {
+    name: 'DOMO',
+    label: 'Domo',
+    primary: '#4287f5',
+    panel: '#ffffff',
+    panelBorder: '#e8e8e8',
+    panelBg: '#f5f5f5',
+    glow: '#4287f522',
+  },
+  'domo-dark': {
+    name: 'DOMO',
+    label: 'Domo',
+    primary: '#4287f5',
+    panel: '#313142',
+    panelBorder: '#494965',
+    panelBg: '#2d2d44',
+    glow: '#4287f544',
+  },
+
+  // ========== ZENSHIN BRUTALIST ==========
+  'zenshin-light': {
+    name: 'ZENSHIN',
+    label: 'Zenshin',
+    primary: '#373a36',
+    panel: '#faf7f2',
+    panelBorder: '#eaeaea',
+    panelBg: '#f6f0e6',
+    glow: '#727a6d22',
+  },
+  'zenshin-dark': {
+    name: 'ZENSHIN',
+    label: 'Zenshin',
+    primary: '#f6f0e6',
+    panel: '#373a36',
+    panelBorder: '#4c4c4c',
+    panelBg: '#373a36',
+    glow: '#727a6d44',
+  },
+
+  // ========== COLDSTREAM ==========
+  'coldstream-light': {
+    name: 'COLDSTREAM',
+    label: 'Coldstream',
+    primary: '#5a6e8a',
+    panel: '#ffffff',
+    panelBorder: '#ebe0e0',
+    panelBg: '#fcfcfc',
+    glow: '#7ca1ae22',
+  },
+  'coldstream-dark': {
+    name: 'COLDSTREAM',
+    label: 'Coldstream',
+    primary: '#5a6e8a',
+    panel: '#3b5a6b',
+    panelBorder: '#636363',
+    panelBg: '#3a3c57',
+    glow: '#7ca1ae44',
+  },
+
+  // ========== AWESOME ==========
+  'awesome-light': {
+    name: 'AWESOME',
+    label: 'Awesome',
+    primary: '#dc4a1a',
+    panel: '#ffffff',
+    panelBorder: '#e8e8e8',
+    panelBg: '#fdf0e6',
+    glow: '#dc4a1a22',
+  },
+  'awesome-dark': {
+    name: 'AWESOME',
+    label: 'Awesome',
+    primary: '#ed5c24',
+    panel: '#363755',
+    panelBorder: '#4f5075',
+    panelBg: '#34365a',
+    glow: '#ed5c2444',
   },
 };
 

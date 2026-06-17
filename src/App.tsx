@@ -12,7 +12,6 @@ import {
   Repeat, Repeat1, Shuffle, CircleOff,
 } from 'lucide-react';
 import type { VisualMode, ColorPreset, AspectRatio, PerformanceMode, AppTheme, CanvasResolution } from './types';
-import { APP_THEMES } from './types';
 
 export default function App() {
   const audio = useAudioEngine();
@@ -21,7 +20,7 @@ export default function App() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const playingForTrackRef = useRef<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [appTheme, setAppTheme] = useState<AppTheme>('dark');
+  const [appTheme, setAppTheme] = useState<AppTheme>('darkmatter-dark');
   const [isLocked, setIsLocked] = useState(false);
   const [visualMode, setVisualMode] = useState<VisualMode>('bass-cannon');
   const [colorPreset, setColorPreset] = useState<ColorPreset>('arctic');
@@ -35,7 +34,6 @@ export default function App() {
   const [isDragging, setIsDragging] = useState(false);
   const [dragTime, setDragTime] = useState(0);
 
-  const theme = APP_THEMES[appTheme];
   const engineRef = audio.engine;
   const trackId = playlist.currentTrack?.id ?? null;
 
@@ -184,7 +182,7 @@ export default function App() {
   const progressPct = audio.duration > 0 ? (displayTime / audio.duration) * 100 : 0;
 
   return (
-    <div className="h-screen w-screen flex flex-col bg-black overflow-hidden" data-theme={appTheme}>
+    <div className="h-screen w-screen flex flex-col overflow-hidden" data-theme={appTheme} style={{ background: 'var(--background)' }}>
 
       <Header
         isLocked={isLocked}
@@ -202,7 +200,7 @@ export default function App() {
 
         <div
           className={`fixed md:static inset-y-0 left-0 z-40 w-72 border-r flex-shrink-0 overflow-y-auto transform transition-transform duration-300 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}`}
-          style={{ borderColor: theme.panelBorder, background: theme.panelBg }}
+          style={{ borderColor: 'var(--border)', background: 'var(--sidebar)' }}
         >
           <LeftPanel
             performanceMode={performanceMode}
@@ -253,26 +251,26 @@ export default function App() {
           </div>
 
           {playlist.currentTrack && (
-            <div className="border-t" style={{ borderColor: theme.panelBorder, background: `var(--t-panel-gradient, ${theme.panel})` }}>
+            <div className="border-t" style={{ borderColor: 'var(--border)', background: 'var(--card)' }}>
               {/* Track name */}
               <div className="flex items-center justify-center px-3 py-1">
-                <span className="text-[10px] truncate text-center" style={{ color: `color-mix(in srgb, ${theme.primary} 70%, transparent)` }}>
+                <span className="text-[10px] truncate text-center" style={{ color: 'var(--muted-foreground)' }}>
                   {playlist.currentTrack.name}
                 </span>
               </div>
 
               {/* Centered controls */}
               <div className="flex items-center justify-center gap-2 pb-1">
-                <button className="military-btn p-1.5" onClick={handlePrev}>
+                <button className="app-btn p-1.5" onClick={handlePrev}>
                   <SkipBack className="w-3.5 h-3.5" />
                 </button>
-                <button className="military-btn p-2" onClick={() => audio.togglePlay()}>
+                <button className="app-btn p-2" onClick={() => audio.togglePlay()}>
                   {audio.isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                 </button>
-                <button className="military-btn p-1.5" onClick={handleNext}>
+                <button className="app-btn p-1.5" onClick={handleNext}>
                   <SkipForward className="w-3.5 h-3.5" />
                 </button>
-                <button className="military-btn p-1.5" onClick={playlist.cycleRepeat}>
+                <button className="app-btn p-1.5" onClick={playlist.cycleRepeat}>
                   {playlist.repeatMode === 'one' && <Repeat1 className="w-3.5 h-3.5" />}
                   {playlist.repeatMode === 'all' && <Repeat className="w-3.5 h-3.5" />}
                   {playlist.repeatMode === 'shuffle' && <Shuffle className="w-3.5 h-3.5" />}
@@ -282,7 +280,7 @@ export default function App() {
 
               {/* Progress bar */}
               <div className="flex items-center gap-2 px-3 pb-1.5">
-                <span className="text-[8px] w-8 text-right flex-shrink-0" style={{ color: `color-mix(in srgb, ${theme.primary} 50%, transparent)` }}>
+                <span className="text-[8px] w-8 text-right flex-shrink-0" style={{ color: 'var(--muted-foreground)' }}>
                   {fmtDur(displayTime)}
                 </span>
                 <div
@@ -293,23 +291,23 @@ export default function App() {
                   onPointerUp={onPointerUp}
                   onPointerCancel={onPointerUp}
                 >
-                  <div className="w-full h-1 rounded-full overflow-hidden" style={{ background: `color-mix(in srgb, ${theme.primary} 15%, transparent)` }}>
+                  <div className="w-full h-1 rounded-full overflow-hidden" style={{ background: 'var(--secondary)' }}>
                     <div
                       className="h-full rounded-full transition-none"
-                      style={{ width: `${progressPct}%`, background: theme.primary }}
+                      style={{ width: `${progressPct}%`, background: 'var(--primary)' }}
                     />
                   </div>
                   <div
                     className="absolute w-3 h-3 rounded-full border-2 transition-transform group-hover:scale-125"
                     style={{
                       left: `calc(${progressPct}% - 6px)`,
-                      background: theme.primary,
-                      borderColor: theme.panelBg,
-                      boxShadow: `0 0 6px ${theme.primary}66`,
+                      background: 'var(--primary)',
+                      borderColor: 'var(--background)',
+                      boxShadow: '0 0 6px var(--ring)',
                     }}
                   />
                 </div>
-                <span className="text-[8px] w-8 flex-shrink-0" style={{ color: `color-mix(in srgb, ${theme.primary} 50%, transparent)` }}>
+                <span className="text-[8px] w-8 flex-shrink-0" style={{ color: 'var(--muted-foreground)' }}>
                   {fmtDur(audio.duration)}
                 </span>
               </div>
@@ -318,11 +316,11 @@ export default function App() {
 
           <div
             className="flex items-center justify-between px-3 md:px-4 py-2 border-t"
-            style={{ borderColor: theme.panelBorder, background: `var(--t-panel-gradient, ${theme.panel})` }}
+            style={{ borderColor: 'var(--border)', background: 'var(--card)' }}
           >
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 bg-[#22c55e] animate-pulse" />
-              <span className="text-[9px] tracking-[2px] hidden sm:inline" style={{ color: `color-mix(in srgb, ${theme.primary} 40%, transparent)` }}>
+              <span className="text-[9px] tracking-[2px] hidden sm:inline" style={{ color: 'var(--muted-foreground)' }}>
                 SYSTEM READY
               </span>
             </div>

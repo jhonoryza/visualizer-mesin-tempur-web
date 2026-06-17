@@ -1,8 +1,8 @@
 import { useCallback, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Upload, Trash2, Play, X, ListMusic, Target, Radar, AudioLines, Sparkles, Zap } from 'lucide-react';
-import type { VisualMode, ColorPreset, AspectRatio, PerformanceMode, AppTheme, Track, RepeatMode, CanvasResolution } from '../types';
-import { COLOR_PRESETS, APP_THEMES, CANVAS_RESOLUTIONS } from '../types';
+import { Upload, Trash2, Play, X, ListMusic, Target, Radar, AudioLines, Sparkles, Zap, Sun, Moon } from 'lucide-react';
+import type { VisualMode, ColorPreset, AspectRatio, PerformanceMode, AppTheme, ThemeName, ThemeMode, Track, RepeatMode, CanvasResolution } from '../types';
+import { COLOR_PRESETS, APP_THEMES, THEME_NAMES, CANVAS_RESOLUTIONS } from '../types';
 
 interface LeftPanelProps {
   performanceMode: PerformanceMode;
@@ -63,7 +63,6 @@ export function LeftPanel({
 }: LeftPanelProps) {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const theme = APP_THEMES[appTheme];
 
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
@@ -97,12 +96,12 @@ export function LeftPanel({
       {num !== undefined && (
         <span
           className="w-5 h-5 flex items-center justify-center border text-[9px]"
-          style={{ borderColor: theme.panelBorder, color: theme.primary, borderRadius: 'var(--t-radius)' }}
+          style={{ borderColor: 'var(--border)', color: 'var(--primary)', borderRadius: 'var(--radius)' }}
         >
           {num}
         </span>
       )}
-      <span className="text-[10px] tracking-[2px] uppercase" style={{ color: `color-mix(in srgb, ${theme.primary} 80%, transparent)` }}>
+      <span className="text-[10px] tracking-[2px] uppercase" style={{ color: 'var(--muted-foreground)' }}>
         {title}
       </span>
     </div>
@@ -133,7 +132,7 @@ export function LeftPanel({
       {/* Mobile close button */}
       <button
         className="md:hidden absolute top-3 right-3 w-7 h-7 flex items-center justify-center border z-50"
-        style={{ borderColor: theme.panelBorder, color: theme.primary, borderRadius: 'var(--t-radius)' }}
+        style={{ borderColor: 'var(--border)', color: 'var(--primary)', borderRadius: 'var(--radius)' }}
         onClick={onCloseMobile}
       >
         <X className="w-4 h-4" />
@@ -147,8 +146,8 @@ export function LeftPanel({
       >
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
-            <ListMusic className="w-4 h-4" style={{ color: theme.primary }} />
-            <span className="text-[10px] tracking-[2px] uppercase" style={{ color: `color-mix(in srgb, ${theme.primary} 80%, transparent)` }}>
+            <ListMusic className="w-4 h-4" style={{ color: 'var(--primary)' }} />
+            <span className="text-[10px] tracking-[2px] uppercase" style={{ color: 'var(--muted-foreground)' }}>
               PLAYLIST ({tracks.length})
             </span>
           </div>
@@ -177,8 +176,8 @@ export function LeftPanel({
           onClick={() => fileInputRef.current?.click()}
         >
           <input ref={fileInputRef} type="file" accept=".mp3,.wav,.m4a,.ogg,.flac,.aac" multiple className="hidden" onChange={handleFileInput} />
-          <Upload className="w-5 h-5 mx-auto mb-1" style={{ color: `color-mix(in srgb, ${theme.primary} 50%, transparent)` }} />
-          <p className="text-[9px] tracking-[1px]" style={{ color: `color-mix(in srgb, ${theme.primary} 50%, transparent)` }}>
+          <Upload className="w-5 h-5 mx-auto mb-1" style={{ color: 'var(--muted-foreground)' }} />
+          <p className="text-[9px] tracking-[1px]" style={{ color: 'var(--muted-foreground)' }}>
             + Add Music (Multiple Files)
           </p>
         </div>
@@ -193,24 +192,24 @@ export function LeftPanel({
                   currentTrackId === track.id ? '' : 'hover:bg-white/5'
                 }`}
                 style={{
-                  background: currentTrackId === track.id ? `color-mix(in srgb, ${theme.primary} 12%, transparent)` : undefined,
-                  borderLeft: currentTrackId === track.id ? `2px solid ${theme.primary}` : '2px solid transparent',
+                  background: currentTrackId === track.id ? 'color-mix(in srgb, var(--primary) 12%, transparent)' : undefined,
+                  borderLeft: currentTrackId === track.id ? '2px solid var(--primary)' : '2px solid transparent',
                 }}
                 onClick={() => onPlayTrack(i)}
               >
-                <Play className="w-3 h-3 flex-shrink-0" style={{ color: currentTrackId === track.id ? theme.primary : `color-mix(in srgb, ${theme.primary} 40%, transparent)` }} />
+                <Play className="w-3 h-3 flex-shrink-0" style={{ color: currentTrackId === track.id ? 'var(--primary)' : 'var(--muted-foreground)' }} />
                 <span
                   className="text-[9px] truncate flex-1"
-                  style={{ color: currentTrackId === track.id ? theme.primary : `color-mix(in srgb, ${theme.primary} 60%, transparent)` }}
+                  style={{ color: currentTrackId === track.id ? 'var(--primary)' : 'var(--foreground)' }}
                 >
                   {track.name}
                 </span>
-                <span className="text-[8px] flex-shrink-0" style={{ color: `color-mix(in srgb, ${theme.primary} 30%, transparent)` }}>
+                <span className="text-[8px] flex-shrink-0" style={{ color: 'var(--muted-foreground)' }}>
                   {track.duration > 0 ? formatDur(track.duration) : '--:--'}
                 </span>
                 <button
                   className="w-4 h-4 flex items-center justify-center hover:text-[#ef4444] flex-shrink-0"
-                  style={{ color: `color-mix(in srgb, ${theme.primary} 30%, transparent)` }}
+                  style={{ color: 'var(--muted-foreground)' }}
                   onClick={(e) => { e.stopPropagation(); onRemoveTrack(track.id); }}
                 >
                   <Trash2 className="w-3 h-3" />
@@ -256,7 +255,7 @@ export function LeftPanel({
 
         <div className="space-y-3">
           <div>
-            <label className="text-[9px] tracking-wider block mb-1" style={{ color: `color-mix(in srgb, ${theme.primary} 50%, transparent)` }}>
+            <label className="text-[9px] tracking-wider block mb-1" style={{ color: 'var(--muted-foreground)' }}>
               VISUAL MODE
             </label>
             <div className="grid grid-cols-3 gap-1">
@@ -275,7 +274,7 @@ export function LeftPanel({
           </div>
 
           <div>
-            <label className="text-[9px] tracking-wider block mb-1" style={{ color: `color-mix(in srgb, ${theme.primary} 50%, transparent)` }}>
+            <label className="text-[9px] tracking-wider block mb-1" style={{ color: 'var(--muted-foreground)' }}>
               COLOR PRESET
             </label>
             <div className="grid grid-cols-4 gap-1">
@@ -290,7 +289,7 @@ export function LeftPanel({
                     className="w-3 h-3"
                     style={{
                       backgroundColor: p.preview,
-                      borderRadius: 'var(--t-radius)',
+                      borderRadius: 'var(--radius)',
                       boxShadow: colorPreset === p.value ? `0 0 8px ${p.preview}` : 'none',
                     }}
                   />
@@ -301,7 +300,7 @@ export function LeftPanel({
           </div>
 
           <div>
-            <label className="text-[9px] tracking-wider block mb-1" style={{ color: `color-mix(in srgb, ${theme.primary} 50%, transparent)` }}>
+            <label className="text-[9px] tracking-wider block mb-1" style={{ color: 'var(--muted-foreground)' }}>
               ASPECT RATIO
             </label>
             <div className="flex gap-1">
@@ -323,7 +322,7 @@ export function LeftPanel({
           </div>
 
           <div>
-            <label className="text-[9px] tracking-wider block mb-1" style={{ color: `color-mix(in srgb, ${theme.primary} 50%, transparent)` }}>
+            <label className="text-[9px] tracking-wider block mb-1" style={{ color: 'var(--muted-foreground)' }}>
               OUTPUT RESOLUTION
             </label>
             <div className="flex gap-1 flex-wrap">
@@ -341,7 +340,7 @@ export function LeftPanel({
           </div>
 
           <div>
-            <label className="text-[9px] tracking-wider block mb-1" style={{ color: `color-mix(in srgb, ${theme.primary} 50%, transparent)` }}>
+            <label className="text-[9px] tracking-wider block mb-1" style={{ color: 'var(--muted-foreground)' }}>
               MAIN TEXT
             </label>
             <input
@@ -355,7 +354,7 @@ export function LeftPanel({
           </div>
 
           <div>
-            <label className="text-[9px] tracking-wider block mb-1" style={{ color: `color-mix(in srgb, ${theme.primary} 50%, transparent)` }}>
+            <label className="text-[9px] tracking-wider block mb-1" style={{ color: 'var(--muted-foreground)' }}>
               SUBTITLE TEXT
             </label>
             <input
@@ -370,7 +369,7 @@ export function LeftPanel({
         </div>
       </motion.div>
 
-      {/* Themes — compact grid on mobile */}
+      {/* Themes */}
       <motion.div
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
@@ -378,24 +377,53 @@ export function LeftPanel({
         className="app-panel glow-border p-3"
       >
         <SectionLabel title="APP THEME" />
-        <div className="grid grid-cols-5 gap-1">
-          {(Object.keys(APP_THEMES) as AppTheme[]).map((t) => (
-            <button
-              key={t}
-              className={`app-btn text-[7px] py-1.5 px-1 flex flex-col items-center gap-1 ${appTheme === t ? 'active' : ''}`}
-              onClick={() => onAppThemeChange(t)}
-            >
-              <div
-                className="w-3 h-3 flex-shrink-0"
-                style={{
-                  backgroundColor: APP_THEMES[t].primary,
-                  borderRadius: '6px',
-                  boxShadow: appTheme === t ? `0 0 8px ${APP_THEMES[t].primary}` : 'none',
-                }}
-              />
-              <span className="leading-none whitespace-nowrap">{APP_THEMES[t].label.split(' ')[0]}</span>
-            </button>
-          ))}
+
+        {/* Light/Dark toggle */}
+        <div className="flex items-center gap-1 mb-3">
+          {(['light', 'dark'] as ThemeMode[]).map((mode) => {
+            const parts = appTheme.split('-');
+            const currentName = parts.slice(0, -1).join('-') as ThemeName;
+            const currentMode = parts[parts.length - 1] as ThemeMode;
+            const isActive = currentMode === mode;
+            return (
+              <button
+                key={mode}
+                className={`app-btn flex-1 text-[9px] py-1.5 flex items-center justify-center gap-1.5 ${isActive ? 'active' : ''}`}
+                onClick={() => onAppThemeChange(`${currentName}-${mode}`)}
+              >
+                {mode === 'light' ? <Sun className="w-3 h-3" /> : <Moon className="w-3 h-3" />}
+                <span className="capitalize">{mode}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Theme names */}
+        <div className="grid grid-cols-2 gap-1.5">
+          {(Object.keys(THEME_NAMES) as ThemeName[]).map((name) => {
+            const parts = appTheme.split('-');
+            const currentName = parts.slice(0, -1).join('-') as ThemeName;
+            const currentMode = parts[parts.length - 1] as ThemeMode;
+            const isActive = currentName === name;
+            const themeKey = `${name}-${currentMode}` as AppTheme;
+            const config = APP_THEMES[themeKey];
+            return (
+              <button
+                key={name}
+                className={`app-btn text-[9px] py-2 px-2 flex items-center gap-2 ${isActive ? 'active' : ''}`}
+                onClick={() => onAppThemeChange(themeKey)}
+              >
+                <div
+                  className="w-3 h-3 flex-shrink-0"
+                  style={{
+                    backgroundColor: config.primary,
+                    borderRadius: '4px',
+                  }}
+                />
+                <span>{THEME_NAMES[name]}</span>
+              </button>
+            );
+          })}
         </div>
       </motion.div>
     </div>

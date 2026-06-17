@@ -4,7 +4,7 @@ import { Activity } from 'lucide-react';
 import type { AudioEngine } from '../hooks/useAudioEngine';
 import { renderFrame, type RenderContext } from '../lib/renderer';
 import type { ColorScheme, VisualMode, AspectRatio, ColorPreset, AppTheme, CanvasResolution } from '../types';
-import { COLOR_PRESETS, ASPECT_RATIOS, APP_THEMES, CANVAS_RESOLUTIONS } from '../types';
+import { COLOR_PRESETS, ASPECT_RATIOS, CANVAS_RESOLUTIONS } from '../types';
 
 type PerformanceMode = 'light' | 'balanced' | 'ultra';
 
@@ -34,7 +34,6 @@ export function VisualizerMonitor({
   fps,
   onFpsTick,
   performanceMode,
-  appTheme,
   onCanvasReady,
 }: VisualizerMonitorProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -48,7 +47,6 @@ export function VisualizerMonitor({
   const colors: ColorScheme = COLOR_PRESETS[colorPreset];
   const ratio = ASPECT_RATIOS[aspectRatio];
   const resolution = CANVAS_RESOLUTIONS[canvasResolution];
-  const theme = APP_THEMES[appTheme];
 
   // Canvas renders at resolution (reduced in light mode)
   const resScale = performanceMode === 'light' ? 0.5 : performanceMode === 'balanced' ? 0.75 : 1;
@@ -173,29 +171,29 @@ export function VisualizerMonitor({
       {/* Monitor Header */}
       <div
         className="flex items-center justify-between px-3 py-2 border-b"
-        style={{ borderColor: theme.panelBorder, background: `var(--t-panel-gradient, ${theme.panel})` }}
+        style={{ borderColor: 'var(--border)', background: 'var(--card)' }}
       >
         <div className="flex items-center gap-2">
-          <Activity className="w-4 h-4" style={{ color: theme.primary }} />
-          <span className="text-[10px] tracking-[2px]" style={{ color: `color-mix(in srgb, ${theme.primary} 80%, transparent)` }}>
+          <Activity className="w-4 h-4" style={{ color: 'var(--primary)' }} />
+          <span className="text-[10px] tracking-[2px]" style={{ color: 'var(--foreground)' }}>
             VISUALIZER
           </span>
         </div>
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1">
             <div className={`w-1.5 h-1.5 rounded-full ${fps > 25 ? 'bg-[#22c55e]' : 'bg-[#ef4444]'}`} />
-            <span className="text-[9px]" style={{ color: `color-mix(in srgb, ${theme.primary} 60%, transparent)` }}>
+            <span className="text-[9px]" style={{ color: 'var(--muted-foreground)' }}>
               {fps} FPS
             </span>
           </div>
-          <span className="text-[9px]" style={{ color: `color-mix(in srgb, ${theme.primary} 40%, transparent)` }}>
+          <span className="text-[9px]" style={{ color: 'var(--muted-foreground)' }}>
             {canvasW}x{canvasH}
           </span>
         </div>
       </div>
 
       {/* Canvas Container */}
-      <div ref={containerRef} className="flex-1 flex items-center justify-center bg-black relative overflow-hidden">
+      <div ref={containerRef} className="flex-1 flex items-center justify-center relative overflow-hidden" style={{ background: 'var(--background)' }}>
         <canvas
           ref={canvasRef}
           width={canvasW}
@@ -203,8 +201,8 @@ export function VisualizerMonitor({
           style={{
             width: displaySize.w,
             height: displaySize.h,
-            borderColor: theme.panelBorder,
-            borderRadius: 'var(--t-radius)',
+            borderColor: 'var(--border)',
+            borderRadius: 'var(--radius)',
           }}
           className="border"
         />

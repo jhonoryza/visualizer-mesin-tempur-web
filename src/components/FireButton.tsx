@@ -2,7 +2,6 @@ import { useState, useCallback, useRef } from 'react';
 import { Flame, Loader2, Download } from 'lucide-react';
 import type { AudioEngine } from '../hooks/useAudioEngine';
 import type { ExportFormat, ExportDuration, AppTheme, Track } from '../types';
-import { APP_THEMES } from '../types';
 
 interface FireButtonProps {
   canvasRef: React.RefObject<HTMLCanvasElement | null>;
@@ -14,7 +13,7 @@ interface FireButtonProps {
   onSelectTrack: (index: number) => void;
 }
 
-export function FireButton({ canvasRef, engineRef, audioDuration, appTheme, tracks, currentTrackIndex, onSelectTrack }: FireButtonProps) {
+export function FireButton({ canvasRef, engineRef, audioDuration, tracks, currentTrackIndex, onSelectTrack }: FireButtonProps) {
   const [isExporting, setIsExporting] = useState(false);
   const [progress, setProgress] = useState(0);
   const [exportDuration, setExportDuration] = useState<ExportDuration>('full');
@@ -23,7 +22,6 @@ export function FireButton({ canvasRef, engineRef, audioDuration, appTheme, trac
   const [exportTrackIdx, setExportTrackIdx] = useState<number>(currentTrackIndex);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const progressIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const theme = APP_THEMES[appTheme];
 
   const handleFire = useCallback(async () => {
     if (isExporting) {
@@ -140,16 +138,16 @@ export function FireButton({ canvasRef, engineRef, audioDuration, appTheme, trac
           <div
             className="absolute bottom-full right-0 mb-1 p-2 z-50 w-48"
             style={{
-              background: theme.panelBg,
-              border: `var(--t-border-w) solid ${theme.panelBorder}`,
-              borderRadius: 'var(--t-radius)',
-              boxShadow: 'var(--t-shadow)',
+              background: 'var(--card)',
+              border: '1px solid var(--border)',
+              borderRadius: 'var(--radius)',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
             }}
           >
             {/* Track selector — only if multiple tracks */}
             {tracks.length > 1 && (
               <>
-                <label className="text-[8px] block mb-1" style={{ color: `color-mix(in srgb, ${theme.primary} 50%, transparent)` }}>
+                <label className="text-[8px] block mb-1" style={{ color: 'var(--muted-foreground)' }}>
                   TRACK
                 </label>
                 <select
@@ -164,7 +162,7 @@ export function FireButton({ canvasRef, engineRef, audioDuration, appTheme, trac
               </>
             )}
 
-            <label className="text-[8px] block mb-1" style={{ color: `color-mix(in srgb, ${theme.primary} 50%, transparent)` }}>
+            <label className="text-[8px] block mb-1" style={{ color: 'var(--muted-foreground)' }}>
               DURATION
             </label>
             <div className="grid grid-cols-3 gap-1 mb-2">
@@ -179,7 +177,7 @@ export function FireButton({ canvasRef, engineRef, audioDuration, appTheme, trac
               ))}
             </div>
 
-            <label className="text-[8px] block mb-1" style={{ color: `color-mix(in srgb, ${theme.primary} 50%, transparent)` }}>
+            <label className="text-[8px] block mb-1" style={{ color: 'var(--muted-foreground)' }}>
               FORMAT
             </label>
             <div className="flex gap-1 mb-1">
@@ -193,7 +191,7 @@ export function FireButton({ canvasRef, engineRef, audioDuration, appTheme, trac
                 </button>
               ))}
             </div>
-            <div className="text-[7px]" style={{ color: `color-mix(in srgb, ${theme.primary} 30%, transparent)` }}>
+            <div className="text-[7px]" style={{ color: 'var(--muted-foreground)' }}>
               MP4: H.264 · WebM: VP9
             </div>
           </div>

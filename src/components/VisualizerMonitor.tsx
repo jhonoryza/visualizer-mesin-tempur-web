@@ -38,7 +38,6 @@ export function VisualizerMonitor({
   const animFrameRef = useRef<number>(0);
   const timeRef = useRef(0);
   const bassPulseRef = useRef(0);
-  const shakeRef = useRef({ x: 0, y: 0, intensity: 0 });
   const [displaySize, setDisplaySize] = useState({ w: 960, h: 540 });
 
   const colors: ColorScheme = COLOR_PRESETS[colorPreset];
@@ -106,33 +105,43 @@ export function VisualizerMonitor({
         engineData.analyser.getByteTimeDomainData(engineData.timeDomainData);
 
         const bufLen = engineData.frequencyData.length;
-        const bassEnd = Math.floor(bufLen * 0.06);
-        const midEnd = Math.floor(bufLen * 0.3);
+        const sampleRate = engineData.audioContext?.sampleRate ?? 44100;
+        const fftSize = engineData.analyser?.fftSize ?? 2048;
+        const binHz = sampleRate / fftSize;
 
-        let bassSum = 0, midSum = 0, highSum = 0;
+        // Target drum frequencies: kick 60-150Hz, snare 150-400Hz
+        const kickStart = Math.floor(40 / binHz);
+        const kickEnd = Math.floor(150 / binHz);
+        const snareEnd = Math.floor(400 / binHz);
+
+        let kickSum = 0, snareSum = 0, highSum = 0;
+        let kickCount = 0, snareCount = 0;
 
         for (let i = 0; i < bufLen; i++) {
           const val = engineData.frequencyData[i];
-          if (i < bassEnd) bassSum += val;
-          else if (i < midEnd) midSum += val;
-          else highSum += val;
+          if (i >= kickStart && i < kickEnd) { kickSum += val; kickCount++; }
+          else if (i >= kickEnd && i < snareEnd) { snareSum += val; snareCount++; }
+          else if (i >= snareEnd) { highSum += val; }
         }
 
-        engineData.bassEnergy = bassSum / (bassEnd || 1) / 255;
-        engineData.midEnergy = midSum / ((midEnd - bassEnd) || 1) / 255;
-        engineData.highEnergy = highSum / ((bufLen - midEnd) || 1) / 255;
+        const kickEnergy = kickCount > 0 ? kickSum / kickCount / 255 : 0;
+        const snareEnergy = snareCount > 0 ? snareSum / snareCount / 255 : 0;
 
-        const targetPulse = engineData.bassEnergy;
-        bassPulseRef.current += (targetPulse - bassPulseRef.current) * 0.35;
+        engineData.bassEnergy = kickEnergy;
+        engineData.midEnergy = snareEnergy;
+        engineData.highEnergy = bufLen - snareEnd > 0 ? highSum / (bufLen - snareEnd) / 255 : 0;
 
-        const shake = shakeRef.current;
-        if (engineData.bassEnergy > 0.6 && engineData.bassEnergy - targetPulse > 0.15) {
-          shake.intensity = engineData.bassEnergy * 8;
+        // Use kick + snare for beat detection
+        const drumEnergy = kickEnergy * 0.7 + snareEnergy * 0.3;
+        const boostedBass = Math.min(1, drumEnergy * 3.5);
+        const targetPulse = boostedBass;
+        // Instant attack, smooth decay
+        if (targetPulse > bassPulseRef.current) {
+          bassPulseRef.current = targetPulse;
+        } else {
+          bassPulseRef.current += (targetPulse - bassPulseRef.current) * 0.12;
         }
-        shake.x = (Math.random() - 0.5) * shake.intensity;
-        shake.y = (Math.random() - 0.5) * shake.intensity;
-        shake.intensity *= 0.88;
-        if (shake.intensity < 0.1) { shake.intensity = 0; shake.x = 0; shake.y = 0; }
+        bassPulseRef.current = Math.min(1, bassPulseRef.current);
       }
 
       timeRef.current += 0.016;
@@ -146,8 +155,6 @@ export function VisualizerMonitor({
         mode: visualMode,
         time: timeRef.current,
         bassPulse: bassPulseRef.current,
-        shakeX: shakeRef.current.x,
-        shakeY: shakeRef.current.y,
         performanceMode,
         themePrimary: theme.primary,
         isLightTheme: appTheme.endsWith('-light'),

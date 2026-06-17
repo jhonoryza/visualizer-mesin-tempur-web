@@ -11,7 +11,8 @@ import {
   SkipBack, SkipForward, Play, Pause,
   Repeat, Repeat1, Shuffle, CircleOff,
 } from 'lucide-react';
-import type { VisualMode, ColorPreset, AspectRatio, PerformanceMode, AppTheme, CanvasResolution } from './types';
+import type { VisualMode, ColorPreset, AspectRatio, PerformanceMode, AppTheme, CanvasResolution, VisualMovement } from './types';
+import { ALL_VISUAL_MODES } from './types';
 
 function loadKey<T>(key: string, fallback: T): T {
   try {
@@ -30,12 +31,13 @@ export default function App() {
   const [appTheme, setAppTheme] = useState<AppTheme>(() => loadKey('appTheme', 'darkmatter-dark'));
   const [isLocked, setIsLocked] = useState(() => loadKey('isLocked', false));
   const [visualMode, setVisualMode] = useState<VisualMode>(() => loadKey('visualMode', 'bass-cannon'));
-  const [colorPreset, setColorPreset] = useState<ColorPreset>(() => loadKey('colorPreset', 'arctic'));
+  const [colorPreset, setColorPreset] = useState<ColorPreset>(() => loadKey('colorPreset', 'cyber-noir'));
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>(() =>
     loadKey('aspectRatio', typeof window !== 'undefined' && window.innerWidth < 768 ? 'square' : 'landscape')
   );
   const [canvasResolution, setCanvasResolution] = useState<CanvasResolution>(() => loadKey('canvasResolution', '480p'));
   const [performanceMode, setPerformanceMode] = useState<PerformanceMode>(() => loadKey('performanceMode', 'balanced'));
+  const [visualMovement, setVisualMovement] = useState<VisualMovement>(() => loadKey('visualMovement', 'static'));
   const [isDragging, setIsDragging] = useState(false);
   const [dragTime, setDragTime] = useState(0);
 
@@ -47,6 +49,26 @@ export default function App() {
   useEffect(() => { localStorage.setItem('aspectRatio', JSON.stringify(aspectRatio)); }, [aspectRatio]);
   useEffect(() => { localStorage.setItem('canvasResolution', JSON.stringify(canvasResolution)); }, [canvasResolution]);
   useEffect(() => { localStorage.setItem('performanceMode', JSON.stringify(performanceMode)); }, [performanceMode]);
+  useEffect(() => { localStorage.setItem('visualMovement', JSON.stringify(visualMovement)); }, [visualMovement]);
+
+  // Visual movement cycling
+  useEffect(() => {
+    if (visualMovement === 'static') return;
+    const interval = setInterval(() => {
+      setVisualMode(prev => {
+        const modes = ALL_VISUAL_MODES;
+        const idx = modes.indexOf(prev);
+        if (visualMovement === 'sequential') {
+          return modes[(idx + 1) % modes.length];
+        } else {
+          let next: VisualMode;
+          do { next = modes[Math.floor(Math.random() * modes.length)]; } while (next === prev);
+          return next;
+        }
+      });
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [visualMovement]);
 
   const engineRef = audio.engine;
   const trackId = playlist.currentTrack?.id ?? null;
@@ -227,6 +249,8 @@ export default function App() {
             onAspectRatioChange={setAspectRatio}
             canvasResolution={canvasResolution}
             onCanvasResolutionChange={setCanvasResolution}
+            visualMovement={visualMovement}
+            onVisualMovementChange={setVisualMovement}
             onFilesLoad={handleFilesLoad}
             isLocked={isLocked}
             appTheme={appTheme}

@@ -10,8 +10,6 @@ export interface RenderContext {
   mode: VisualMode;
   time: number;
   bassPulse: number;
-  shakeX: number;
-  shakeY: number;
   performanceMode: 'light' | 'balanced' | 'ultra';
   themePrimary: string;
   isLightTheme: boolean;
@@ -27,9 +25,80 @@ interface ColorCache {
   pAlpha: (a: number) => string;
   aAlpha: (a: number) => string;
   sAlpha: (a: number) => string;
+  dynamic: (a: number, pulse: number) => string;
+  dynamicHex: (pulse: number) => string;
 }
 
-function makeColorCache(c: ColorScheme): ColorCache {
+function hexToRgb(hex: string): [number, number, number] {
+  const h = hex.replace('#', '');
+  return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)];
+}
+
+function rgbToHex(r: number, g: number, b: number): string {
+  return '#' + [r, g, b].map(v => Math.round(Math.max(0, Math.min(255, v))).toString(16).padStart(2, '0')).join('');
+}
+
+function lerpColor(c1: string, c2: string, t: number): string {
+  const [r1, g1, b1] = hexToRgb(c1);
+  const [r2, g2, b2] = hexToRgb(c2);
+  return rgbToHex(r1 + (r2 - r1) * t, g1 + (g2 - g1) * t, b1 + (b2 - b1) * t);
+}
+
+// Color stops: quiet → mid → loud
+const DYNAMIC_COLORS: Record<string, string[]> = {
+  default: ['#38bdf8', '#f59e0b', '#ef4444'],    // blue → orange → red
+  'cyber-noir': ['#06b6d4', '#8b5cf6', '#ec4899'],       // cyan → purple → pink
+  'toxic-green': ['#22c55e', '#eab308', '#ef4444'],      // green → yellow → red
+  'vaporwave': ['#a855f7', '#ec4899', '#f97316'],      // purple → pink → orange
+  'bloodmoon': ['#ef4444', '#f97316', '#fbbf24'],       // red → orange → yellow
+  'glacial': ['#38bdf8', '#06b6d4', '#a855f7'],      // sky → cyan → purple
+  'phantom-purple': ['#d4d4d4', '#a855f7', '#6366f1'],     // gray → purple → indigo
+  'neon-sunset': ['#f59e0b', '#ef4444', '#dc2626'],      // amber → red → dark red
+};
+
+// Per-mode color schemes for dynamic coloring
+const MODE_COLORS: Record<string, string[]> = {
+  'circular-target': ['#f59e0b', '#ef4444', '#fbbf24'],     // amber → red → gold
+  'radar': ['#22c55e', '#eab308', '#ef4444'],               // green → yellow → red
+  'waveform': ['#38bdf8', '#6366f1', '#a855f7'],            // sky → indigo → purple
+  'particle': ['#06b6d4', '#8b5cf6', '#ec4899'],            // cyan → purple → pink
+  'bass-cannon': ['#ef4444', '#f97316', '#fbbf24'],         // red → orange → gold
+  'neon-grid': ['#06b6d4', '#a855f7', '#ec4899'],           // cyan → purple → pink
+  'dna-helix': ['#22c55e', '#10b981', '#06b6d4'],           // green → emerald → cyan
+  'wave-tunnel': ['#6366f1', '#a855f7', '#ec4899'],         // indigo → purple → pink
+  'starburst': ['#fbbf24', '#f59e0b', '#ef4444'],           // gold → amber → red
+  'pulse-rings': ['#38bdf8', '#06b6d4', '#22c55e'],         // sky → cyan → green
+  'lava-lamp': ['#ef4444', '#f97316', '#fbbf24'],           // red → orange → gold
+  'glitch': ['#ef4444', '#06b6d4', '#a855f7'],              // red → cyan → purple
+  'spiral': ['#a855f7', '#ec4899', '#6366f1'],              // purple → pink → indigo
+  'hexagon': ['#06b6d4', '#22c55e', '#10b981'],             // cyan → green → emerald
+  'matrix-rain': ['#22c55e', '#eab308', '#10b981'],         // green → yellow → emerald
+  'aurora': ['#22c55e', '#a855f7', '#6366f1'],              // green → purple → indigo
+  'orbit': ['#38bdf8', '#6366f1', '#a855f7'],               // sky → indigo → purple
+  'wave-bars': ['#f59e0b', '#ef4444', '#a855f7'],           // amber → red → purple
+  'ripple': ['#38bdf8', '#06b6d4', '#22c55e'],              // sky → cyan → green
+  'heartbeat': ['#ef4444', '#f97316', '#fbbf24'],           // red → orange → gold
+  'mosaic': ['#a855f7', '#ec4899', '#6366f1'],              // purple → pink → indigo
+  'fractal': ['#22c55e', '#10b981', '#06b6d4'],             // green → emerald → cyan
+};
+
+function getModeColors(mode: string, _baseHex: string): string[] {
+  return MODE_COLORS[mode] || DYNAMIC_COLORS.default;
+}
+
+function getDynamicColor(baseHex: string, pulse: number, mode?: string): string {
+  const stops = mode ? getModeColors(mode, baseHex) : DYNAMIC_COLORS.default;
+
+  if (pulse < 0.25) {
+    return lerpColor(stops[0], stops[1], pulse / 0.25);
+  } else {
+    return lerpColor(stops[1], stops[2], Math.min(1, (pulse - 0.25) / 0.45));
+  }
+}
+
+function makeColorCache(c: ColorScheme, pulse: number, mode: string): ColorCache {
+  const dynHex = getDynamicColor(c.primary, pulse, mode);
+
   return {
     primary: c.primary,
     glow: c.glow,
@@ -40,6 +109,12 @@ function makeColorCache(c: ColorScheme): ColorCache {
     pAlpha: (a: number) => c.primary + Math.min(255, Math.floor(a * 255)).toString(16).padStart(2, '0'),
     aAlpha: (a: number) => c.accent + Math.min(255, Math.floor(a * 255)).toString(16).padStart(2, '0'),
     sAlpha: (a: number) => c.secondary + Math.min(255, Math.floor(a * 255)).toString(16).padStart(2, '0'),
+    dynamic: (a: number, p: number) => {
+      const amplified = Math.min(1, p * 1.8);
+      const d = getDynamicColor(c.primary, amplified, mode);
+      return d + Math.min(255, Math.floor(a * 255)).toString(16).padStart(2, '0');
+    },
+    dynamicHex: () => dynHex,
   };
 }
 
@@ -69,13 +144,13 @@ function drawGrid(ctx: CanvasRenderingContext2D, w: number, h: number, gridColor
 // === BASS PULSE ===
 function drawBassPulse(rc: RenderContext, cc: ColorCache) {
   const { ctx, width, height, bassPulse } = rc;
-  if (bassPulse < 0.15) return;
+  if (bassPulse < 0.08) return;
   const cx = width / 2, cy = height / 2;
-  const r = Math.max(width, height) * 0.6 * bassPulse;
-  const alpha = bassPulse * 0.15;
+  const r = Math.max(width, height) * 0.7 * bassPulse;
+  const alpha = bassPulse * 0.25;
   const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, r);
   grad.addColorStop(0, cc.pAlpha(alpha));
-  grad.addColorStop(0.7, cc.pAlpha(alpha * 0.3));
+  grad.addColorStop(0.5, cc.pAlpha(alpha * 0.4));
   grad.addColorStop(1, cc.pAlpha(0));
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, width, height);
@@ -85,27 +160,27 @@ function drawBassPulse(rc: RenderContext, cc: ColorCache) {
 function drawCircularTarget(rc: RenderContext, cc: ColorCache) {
   const { ctx, width, height, engine, bassPulse, time } = rc;
   const cx = width / 2, cy = height / 2;
-  const maxR = Math.min(width, height) * 0.38;
+  const maxR = Math.min(width, height) * 0.42;
   ctx.save();
   ctx.translate(cx, cy);
 
-  if (bassPulse > 0.3) {
-    for (let i = 0; i < 4; i++) {
-      const r = maxR + i * 18 + bassPulse * 35;
+  if (bassPulse > 0.2) {
+    for (let i = 0; i < 5; i++) {
+      const r = maxR + i * 20 + bassPulse * 45;
       ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2);
-      ctx.strokeStyle = cc.pAlpha((1 - i * 0.25) * bassPulse * 0.35);
-      ctx.lineWidth = 3 - i * 0.5; ctx.stroke();
+      ctx.strokeStyle = cc.dynamic((1 - i * 0.2) * bassPulse * 0.45, bassPulse);
+      ctx.lineWidth = 4 - i * 0.6; ctx.stroke();
     }
   }
 
   for (let i = 7; i >= 1; i--) {
     const r = maxR * (i / 7);
     ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2);
-    ctx.strokeStyle = i === 1 ? cc.pAlpha(0.8) : cc.pAlpha(0.15);
-    ctx.lineWidth = i === 1 ? 2.5 : 0.6; ctx.stroke();
+    ctx.strokeStyle = i === 1 ? cc.pAlpha(0.85) : cc.pAlpha(0.18);
+    ctx.lineWidth = i === 1 ? 3 : 0.7; ctx.stroke();
   }
 
-  ctx.strokeStyle = cc.pAlpha(0.25); ctx.lineWidth = 0.5;
+  ctx.strokeStyle = cc.pAlpha(0.3); ctx.lineWidth = 0.6;
   for (let a = 0; a < 360; a += 45) {
     const rad = (a * Math.PI) / 180;
     ctx.beginPath();
@@ -116,34 +191,34 @@ function drawCircularTarget(rc: RenderContext, cc: ColorCache) {
 
   const barCount = rc.performanceMode === 'light' ? 48 : 72;
   const step = Math.floor(engine.frequencyData.length / barCount);
-  const innerR = maxR * 0.2 + bassPulse * 10;
+  const innerR = maxR * 0.18 + bassPulse * 12;
   for (let i = 0; i < barCount; i++) {
     const angle = (i / barCount) * Math.PI * 2 - Math.PI / 2;
     const val = engine.frequencyData[i * step] / 255;
-    const barH = val * maxR * 0.55;
+    const barH = val * maxR * 0.65;
     if (barH < 1) continue;
     ctx.save(); ctx.rotate(angle);
-    ctx.fillStyle = cc.pAlpha(0.35 + val * 0.65);
-    ctx.fillRect(innerR, -1.5, barH, 3);
-    if (val > 0.5) {
-      ctx.beginPath(); ctx.arc(innerR + barH, 0, 2 + val * 2.5, 0, Math.PI * 2);
-      ctx.fillStyle = cc.aAlpha(val * 0.8); ctx.fill();
+    ctx.fillStyle = cc.dynamic(0.3 + val * 0.7, bassPulse);
+    ctx.fillRect(innerR, -2, barH, 4);
+    if (val > 0.4) {
+      ctx.beginPath(); ctx.arc(innerR + barH, 0, 2.5 + val * 3, 0, Math.PI * 2);
+      ctx.fillStyle = cc.dynamic(val * 0.85, bassPulse); ctx.fill();
     }
     ctx.restore();
   }
 
-  ctx.beginPath(); ctx.arc(0, 0, maxR * 0.16, 0, Math.PI * 2);
-  ctx.strokeStyle = cc.aAlpha(0.5); ctx.lineWidth = 2.5; ctx.stroke();
+  ctx.beginPath(); ctx.arc(0, 0, maxR * 0.14, 0, Math.PI * 2);
+  ctx.strokeStyle = cc.aAlpha(0.6); ctx.lineWidth = 3; ctx.stroke();
 
-  const pulseR = 12 + bassPulse * 45;
+  const pulseR = 10 + bassPulse * 55;
   const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, pulseR);
-  grad.addColorStop(0, cc.pAlpha(0.9)); grad.addColorStop(0.5, cc.pAlpha(0.3)); grad.addColorStop(1, cc.pAlpha(0));
+  grad.addColorStop(0, cc.dynamic(0.95, bassPulse)); grad.addColorStop(0.4, cc.dynamic(0.35, bassPulse)); grad.addColorStop(1, cc.dynamic(0, bassPulse));
   ctx.beginPath(); ctx.arc(0, 0, pulseR, 0, Math.PI * 2);
   ctx.fillStyle = grad; ctx.fill();
 
   const sweepAngle = (time * 0.8) % (Math.PI * 2);
   const sweepGrad = ctx.createConicGradient(sweepAngle, 0, 0);
-  sweepGrad.addColorStop(0, cc.pAlpha(0.4)); sweepGrad.addColorStop(0.08, cc.pAlpha(0.12)); sweepGrad.addColorStop(0.15, cc.pAlpha(0)); sweepGrad.addColorStop(1, cc.pAlpha(0));
+  sweepGrad.addColorStop(0, cc.pAlpha(0.5)); sweepGrad.addColorStop(0.08, cc.pAlpha(0.15)); sweepGrad.addColorStop(0.15, cc.pAlpha(0)); sweepGrad.addColorStop(1, cc.pAlpha(0));
   ctx.beginPath(); ctx.arc(0, 0, maxR, 0, Math.PI * 2);
   ctx.fillStyle = sweepGrad; ctx.fill();
 
@@ -154,59 +229,59 @@ function drawCircularTarget(rc: RenderContext, cc: ColorCache) {
 function drawRadar(rc: RenderContext, cc: ColorCache) {
   const { ctx, width, height, engine, bassPulse, time } = rc;
   const cx = width / 2, cy = height / 2;
-  const maxR = Math.min(width, height) * 0.38;
+  const maxR = Math.min(width, height) * 0.42;
   ctx.save(); ctx.translate(cx, cy);
 
-  if (bassPulse > 0.4) {
-    for (let i = 0; i < 4; i++) {
-      const phase = (time * 2 + i * 0.5) % 3;
+  if (bassPulse > 0.3) {
+    for (let i = 0; i < 5; i++) {
+      const phase = (time * 2.5 + i * 0.4) % 3;
       const r = phase * maxR;
-      const alpha = Math.max(0, 1 - phase / 3) * bassPulse * 0.4;
+      const alpha = Math.max(0, 1 - phase / 3) * bassPulse * 0.5;
       ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2);
-      ctx.strokeStyle = cc.pAlpha(alpha); ctx.lineWidth = 1.5; ctx.stroke();
+      ctx.strokeStyle = cc.pAlpha(alpha); ctx.lineWidth = 2; ctx.stroke();
     }
   }
 
-  for (let i = 1; i <= 7; i++) {
-    ctx.beginPath(); ctx.arc(0, 0, maxR * (i / 7), 0, Math.PI * 2);
-    ctx.strokeStyle = i === 7 ? cc.pAlpha(0.18) : cc.grid;
-    ctx.lineWidth = i === 7 ? 1.8 : 0.4; ctx.stroke();
+  for (let i = 1; i <= 8; i++) {
+    ctx.beginPath(); ctx.arc(0, 0, maxR * (i / 8), 0, Math.PI * 2);
+    ctx.strokeStyle = i === 8 ? cc.pAlpha(0.2) : cc.grid;
+    ctx.lineWidth = i === 8 ? 2 : 0.5; ctx.stroke();
   }
 
-  ctx.strokeStyle = cc.grid; ctx.lineWidth = 0.3;
+  ctx.strokeStyle = cc.grid; ctx.lineWidth = 0.4;
   for (let a = 0; a < 360; a += 30) {
     const rad = (a * Math.PI) / 180;
     ctx.beginPath(); ctx.moveTo(0, 0);
     ctx.lineTo(Math.cos(rad) * maxR, Math.sin(rad) * maxR); ctx.stroke();
   }
 
-  const sweepAngle = time * 2;
+  const sweepAngle = time * 2.5;
   ctx.save(); ctx.rotate(sweepAngle);
   ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(maxR, 0);
-  ctx.strokeStyle = cc.primary; ctx.lineWidth = 2; ctx.stroke();
+  ctx.strokeStyle = cc.primary; ctx.lineWidth = 2.5; ctx.stroke();
   const sweepGrad = ctx.createLinearGradient(0, 0, maxR, 0);
-  sweepGrad.addColorStop(0, cc.pAlpha(0.5)); sweepGrad.addColorStop(0.5, cc.pAlpha(0.12)); sweepGrad.addColorStop(1, cc.pAlpha(0));
-  ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(maxR, -maxR * 0.2); ctx.lineTo(maxR, 0); ctx.closePath();
+  sweepGrad.addColorStop(0, cc.pAlpha(0.6)); sweepGrad.addColorStop(0.5, cc.pAlpha(0.15)); sweepGrad.addColorStop(1, cc.pAlpha(0));
+  ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(maxR, -maxR * 0.25); ctx.lineTo(maxR, 0); ctx.closePath();
   ctx.fillStyle = sweepGrad; ctx.fill(); ctx.restore();
 
-  const dotCount = 42;
+  const dotCount = 48;
   const step = Math.floor(engine.frequencyData.length / dotCount);
   for (let i = 0; i < dotCount; i++) {
     const val = engine.frequencyData[i * step] / 255;
-    if (val < 0.15) continue;
-    const angle = (i / dotCount) * Math.PI * 2 + time * 0.4;
-    const dist = val * maxR * 0.9;
+    if (val < 0.1) continue;
+    const angle = (i / dotCount) * Math.PI * 2 + time * 0.5;
+    const dist = val * maxR * 0.92;
     const x = Math.cos(angle) * dist, y = Math.sin(angle) * dist;
-    const size = 2 + val * 4.5;
-    const glowGrad = ctx.createRadialGradient(x, y, 0, x, y, size * 3.5);
-    glowGrad.addColorStop(0, cc.pAlpha(val * 0.3)); glowGrad.addColorStop(1, cc.pAlpha(0));
-    ctx.fillStyle = glowGrad; ctx.fillRect(x - size * 3.5, y - size * 3.5, size * 7, size * 7);
+    const size = 2.5 + val * 5;
+    const glowGrad = ctx.createRadialGradient(x, y, 0, x, y, size * 4);
+    glowGrad.addColorStop(0, cc.pAlpha(val * 0.4)); glowGrad.addColorStop(1, cc.pAlpha(0));
+    ctx.fillStyle = glowGrad; ctx.fillRect(x - size * 4, y - size * 4, size * 8, size * 8);
     ctx.beginPath(); ctx.arc(x, y, size, 0, Math.PI * 2);
     ctx.fillStyle = cc.pAlpha(0.5 + val * 0.5); ctx.fill();
   }
 
-  ctx.beginPath(); ctx.arc(0, 0, 5 + bassPulse * 12, 0, Math.PI * 2);
-  ctx.fillStyle = cc.aAlpha(0.85); ctx.fill();
+  ctx.beginPath(); ctx.arc(0, 0, 6 + bassPulse * 15, 0, Math.PI * 2);
+  ctx.fillStyle = cc.aAlpha(0.9); ctx.fill();
   ctx.restore();
 }
 
@@ -216,9 +291,9 @@ function drawWaveform(rc: RenderContext, cc: ColorCache) {
   const cy = height / 2;
   const bufLen = engine.timeDomainData.length;
 
-  if (bassPulse > 0.2) {
-    const grad = ctx.createRadialGradient(width / 2, cy, 0, width / 2, cy, width * 0.4);
-    grad.addColorStop(0, cc.pAlpha(bassPulse * 0.12)); grad.addColorStop(1, cc.pAlpha(0));
+  if (bassPulse > 0.15) {
+    const grad = ctx.createRadialGradient(width / 2, cy, 0, width / 2, cy, width * 0.45);
+    grad.addColorStop(0, cc.pAlpha(bassPulse * 0.18)); grad.addColorStop(1, cc.pAlpha(0));
     ctx.fillStyle = grad; ctx.fillRect(0, 0, width, height);
   }
 
@@ -227,9 +302,9 @@ function drawWaveform(rc: RenderContext, cc: ColorCache) {
   const barW = width / barCount;
   for (let i = 0; i < barCount; i++) {
     const val = engine.frequencyData[i * barStep] / 255;
-    const barH = val * height * 0.38;
+    const barH = val * height * 0.45;
     if (barH < 1) continue;
-    ctx.fillStyle = cc.pAlpha(0.25 + val * 0.5);
+    ctx.fillStyle = cc.pAlpha(0.2 + val * 0.6);
     ctx.fillRect(i * barW, height - barH, barW - 1, barH);
   }
 
@@ -240,7 +315,7 @@ function drawWaveform(rc: RenderContext, cc: ColorCache) {
     const x = (i / bufLen) * width, y = (v * height) / 2;
     if (!started) { ctx.moveTo(x, y); started = true; } else ctx.lineTo(x, y);
   }
-  ctx.strokeStyle = cc.primary; ctx.lineWidth = 2.5; ctx.stroke();
+  ctx.strokeStyle = cc.primary; ctx.lineWidth = 3; ctx.stroke();
 
   ctx.beginPath(); started = false;
   for (let i = 0; i < bufLen; i += skip) {
@@ -248,7 +323,7 @@ function drawWaveform(rc: RenderContext, cc: ColorCache) {
     const x = (i / bufLen) * width, y = height - (v * height) / 2;
     if (!started) { ctx.moveTo(x, y); started = true; } else ctx.lineTo(x, y);
   }
-  ctx.strokeStyle = cc.pAlpha(0.2); ctx.lineWidth = 1; ctx.stroke();
+  ctx.strokeStyle = cc.pAlpha(0.2); ctx.lineWidth = 1.2; ctx.stroke();
 
   ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(width, cy);
   ctx.strokeStyle = cc.pAlpha(0.08); ctx.lineWidth = 0.5; ctx.stroke();
@@ -259,41 +334,41 @@ function drawParticle(rc: RenderContext, cc: ColorCache) {
   const { ctx, width, height, engine, bassPulse, time } = rc;
   const centerX = width / 2, centerY = height / 2;
   const isLight = rc.performanceMode === 'light';
-  const particleCount = isLight ? 100 : 160;
+  const particleCount = isLight ? 120 : 200;
   const step = Math.floor(engine.frequencyData.length / particleCount);
 
   for (let i = 0; i < particleCount; i++) {
     const val = engine.frequencyData[i * step] / 255;
-    const angle = (i / particleCount) * Math.PI * 2 + time * 0.3;
-    const baseDist = 35 + (i / particleCount) * Math.min(width, height) * 0.4;
-    const dist = baseDist + val * 90 + bassPulse * 25;
+    const angle = (i / particleCount) * Math.PI * 2 + time * 0.4;
+    const baseDist = 30 + (i / particleCount) * Math.min(width, height) * 0.45;
+    const dist = baseDist + val * 110 + bassPulse * 35;
     const x = centerX + Math.cos(angle) * dist;
     const y = centerY + Math.sin(angle) * dist;
-    const size = 1 + val * 5;
+    const size = 1.5 + val * 6;
 
-    if (val > 0.25 && !isLight) {
-      const glowGrad = ctx.createRadialGradient(x, y, 0, x, y, size * 4.5);
-      glowGrad.addColorStop(0, cc.pAlpha(val * 0.2)); glowGrad.addColorStop(1, cc.pAlpha(0));
-      ctx.fillStyle = glowGrad; ctx.fillRect(x - size * 4.5, y - size * 4.5, size * 9, size * 9);
+    if (val > 0.2 && !isLight) {
+      const glowGrad = ctx.createRadialGradient(x, y, 0, x, y, size * 5);
+      glowGrad.addColorStop(0, cc.pAlpha(val * 0.25)); glowGrad.addColorStop(1, cc.pAlpha(0));
+      ctx.fillStyle = glowGrad; ctx.fillRect(x - size * 5, y - size * 5, size * 10, size * 10);
     }
 
     ctx.beginPath(); ctx.arc(x, y, size, 0, Math.PI * 2);
-    ctx.fillStyle = cc.pAlpha(0.35 + val * 0.65); ctx.fill();
+    ctx.fillStyle = cc.pAlpha(0.3 + val * 0.7); ctx.fill();
   }
 
-  const energyR = 18 + bassPulse * 50;
+  const energyR = 22 + bassPulse * 60;
   const grad = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, energyR);
-  grad.addColorStop(0, cc.pAlpha(0.65)); grad.addColorStop(0.5, cc.pAlpha(0.12)); grad.addColorStop(1, cc.pAlpha(0));
+  grad.addColorStop(0, cc.pAlpha(0.75)); grad.addColorStop(0.5, cc.pAlpha(0.15)); grad.addColorStop(1, cc.pAlpha(0));
   ctx.fillStyle = grad;
   ctx.beginPath(); ctx.arc(centerX, centerY, energyR, 0, Math.PI * 2); ctx.fill();
 
-  ctx.beginPath(); ctx.arc(centerX, centerY, 4 + bassPulse * 7, 0, Math.PI * 2);
+  ctx.beginPath(); ctx.arc(centerX, centerY, 5 + bassPulse * 10, 0, Math.PI * 2);
   ctx.fillStyle = cc.primary; ctx.fill();
 
   for (let r = 0; r < 4; r++) {
-    const ringR = 55 + r * 45 + bassPulse * 18;
+    const ringR = 50 + r * 50 + bassPulse * 22;
     ctx.beginPath(); ctx.arc(centerX, centerY, ringR, 0, Math.PI * 2);
-    ctx.strokeStyle = cc.pAlpha(r === 0 ? 0.28 : 0.08); ctx.lineWidth = r === 0 ? 1.3 : 0.4; ctx.stroke();
+    ctx.strokeStyle = cc.pAlpha(r === 0 ? 0.35 : 0.1); ctx.lineWidth = r === 0 ? 1.5 : 0.5; ctx.stroke();
   }
 }
 
@@ -301,47 +376,47 @@ function drawParticle(rc: RenderContext, cc: ColorCache) {
 function drawBassCannon(rc: RenderContext, cc: ColorCache) {
   const { ctx, width, height, engine, bassPulse, time } = rc;
   const centerX = width / 2, centerY = height / 2;
-  const maxR = Math.min(width, height) * 0.42;
+  const maxR = Math.min(width, height) * 0.45;
 
-  for (let i = 0; i < 5; i++) {
-    const phase = (time * 3 + i * 0.6) % 4;
+  for (let i = 0; i < 6; i++) {
+    const phase = (time * 3.5 + i * 0.5) % 4;
     const r = phase * maxR;
-    const alpha = Math.max(0, 1 - phase / 4) * bassPulse * 0.65;
+    const alpha = Math.max(0, 1 - phase / 4) * bassPulse * 0.75;
     if (alpha < 0.02) continue;
     ctx.beginPath(); ctx.arc(centerX, centerY, r, 0, Math.PI * 2);
-    ctx.strokeStyle = cc.pAlpha(alpha); ctx.lineWidth = 3.5 - phase * 0.6; ctx.stroke();
+    ctx.strokeStyle = cc.pAlpha(alpha); ctx.lineWidth = 4 - phase * 0.6; ctx.stroke();
   }
 
-  const explosionR = 8 + bassPulse * 75;
+  const explosionR = 6 + bassPulse * 90;
   const explosionGrad = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, explosionR);
-  explosionGrad.addColorStop(0, '#ffffff'); explosionGrad.addColorStop(0.12, cc.primary);
-  explosionGrad.addColorStop(0.5, cc.pAlpha(0.3)); explosionGrad.addColorStop(1, cc.pAlpha(0));
+  explosionGrad.addColorStop(0, '#ffffff'); explosionGrad.addColorStop(0.1, cc.primary);
+  explosionGrad.addColorStop(0.5, cc.pAlpha(0.35)); explosionGrad.addColorStop(1, cc.pAlpha(0));
   ctx.fillStyle = explosionGrad;
   ctx.beginPath(); ctx.arc(centerX, centerY, explosionR, 0, Math.PI * 2); ctx.fill();
 
-  const burstCount = 28;
+  const burstCount = 32;
   for (let i = 0; i < burstCount; i++) {
     const angle = (i / burstCount) * Math.PI * 2;
     const val = engine.frequencyData[i * Math.floor(engine.frequencyData.length / burstCount)] / 255;
-    const innerR = 12 + bassPulse * 28;
-    const outerR = innerR + val * maxR * 0.55;
+    const innerR = 10 + bassPulse * 32;
+    const outerR = innerR + val * maxR * 0.65;
     ctx.beginPath();
     ctx.moveTo(centerX + Math.cos(angle) * innerR, centerY + Math.sin(angle) * innerR);
     ctx.lineTo(centerX + Math.cos(angle) * outerR, centerY + Math.sin(angle) * outerR);
-    ctx.strokeStyle = cc.pAlpha(0.28 + val * 0.55); ctx.lineWidth = 1.5 + val * 2.5; ctx.stroke();
+    ctx.strokeStyle = cc.pAlpha(0.25 + val * 0.65); ctx.lineWidth = 2 + val * 3; ctx.stroke();
   }
 
-  const specCount = 72;
+  const specCount = 80;
   const specStep = Math.floor(engine.frequencyData.length / specCount);
   for (let i = 0; i < specCount; i++) {
     const angle = (i / specCount) * Math.PI * 2;
     const val = engine.frequencyData[i * specStep] / 255;
-    const innerR = maxR * 0.48;
-    const outerR = innerR + val * maxR * 0.35;
+    const innerR = maxR * 0.45;
+    const outerR = innerR + val * maxR * 0.4;
     ctx.beginPath();
     ctx.moveTo(centerX + Math.cos(angle) * innerR, centerY + Math.sin(angle) * innerR);
     ctx.lineTo(centerX + Math.cos(angle) * outerR, centerY + Math.sin(angle) * outerR);
-    ctx.strokeStyle = cc.aAlpha(val * 0.75); ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.strokeStyle = cc.aAlpha(val * 0.85); ctx.lineWidth = 2; ctx.stroke();
   }
 }
 
@@ -959,47 +1034,20 @@ function drawGlitch(rc: RenderContext, cc: ColorCache) {
   }
 }
 
-// === LOGO ===
-let logoImg: HTMLImageElement | null = null;
-let logoLoaded = false;
-
-function loadLogo() {
-  if (logoLoaded) return;
-  logoLoaded = true;
-  const img = new Image();
-  img.onload = () => { logoImg = img; };
-  img.src = '/winemp-logo.png';
-}
-
 // === HUD OVERLAY ===
-function drawHUDOverlay(rc: RenderContext, _cc: ColorCache) {
-  const { ctx, width, height } = rc;
-  loadLogo();
-
-  if (logoImg) {
-    const logoSize = Math.max(32, Math.min(56, width * 0.055));
-    const padding = 10;
-    const x = width - logoSize - padding;
-    const y = height - logoSize - padding;
-    ctx.globalAlpha = 0.8;
-    ctx.drawImage(logoImg, x, y, logoSize, logoSize);
-    ctx.globalAlpha = 1;
-  }
+function drawHUDOverlay(_rc: RenderContext, _cc: ColorCache) {
+  // Clean canvas, no overlay
 }
 
 // === MAIN RENDER ===
 export function renderFrame(rc: RenderContext) {
-  const { ctx, width, height, isLightTheme } = rc;
-  const cc = makeColorCache(rc.colors);
+  const { ctx, width, height } = rc;
+  const cc = makeColorCache(rc.colors, rc.bassPulse, rc.mode);
 
-  // Simple background: white for light themes, black for dark
-  ctx.fillStyle = isLightTheme ? '#ffffff' : '#000000';
+  ctx.fillStyle = '#000000';
   ctx.fillRect(0, 0, width, height);
 
-  const hasShake = rc.shakeX !== 0 || rc.shakeY !== 0;
-  if (hasShake) { ctx.save(); ctx.translate(rc.shakeX, rc.shakeY); }
-
-  drawGrid(ctx, width, height, isLightTheme ? 'rgba(0,0,0,0.04)' : cc.grid);
+  drawGrid(ctx, width, height, cc.grid);
   drawBassPulse(rc, cc);
 
   switch (rc.mode) {
@@ -1028,5 +1076,4 @@ export function renderFrame(rc: RenderContext) {
   }
 
   drawHUDOverlay(rc, cc);
-  if (hasShake) ctx.restore();
 }

@@ -1,8 +1,8 @@
 import { useCallback, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Upload, Trash2, Play, X, ListMusic, Target, Radar, AudioLines, Sparkles, Zap, Sun, Moon, Grid3x3, Dna, Orbit, Star, Circle, Droplets, Bug, Hexagon, TreePine, Heart, LayoutGrid, Fingerprint, Columns3, Wind, Activity } from 'lucide-react';
-import type { VisualMode, ColorPreset, AspectRatio, PerformanceMode, AppTheme, ThemeName, ThemeMode, Track, RepeatMode, CanvasResolution } from '../types';
-import { COLOR_PRESETS, APP_THEMES, THEME_NAMES, CANVAS_RESOLUTIONS } from '../types';
+import type { VisualMode, ColorPreset, AspectRatio, PerformanceMode, AppTheme, ThemeName, ThemeMode, Track, RepeatMode, CanvasResolution, VisualMovement } from '../types';
+import { COLOR_PRESETS, APP_THEMES, THEME_NAMES, CANVAS_RESOLUTIONS, VISUAL_MOVEMENTS } from '../types';
 
 interface LeftPanelProps {
   performanceMode: PerformanceMode;
@@ -15,6 +15,8 @@ interface LeftPanelProps {
   onAspectRatioChange: (a: AspectRatio) => void;
   canvasResolution: CanvasResolution;
   onCanvasResolutionChange: (r: CanvasResolution) => void;
+  visualMovement: VisualMovement;
+  onVisualMovementChange: (m: VisualMovement) => void;
   onFilesLoad: (files: File[]) => void;
   isLocked: boolean;
   appTheme: AppTheme;
@@ -40,6 +42,8 @@ export function LeftPanel({
   onAspectRatioChange,
   canvasResolution,
   onCanvasResolutionChange,
+  visualMovement,
+  onVisualMovementChange,
   onFilesLoad,
   isLocked,
   appTheme,
@@ -125,13 +129,13 @@ export function LeftPanel({
   ];
 
   const colorPresets: { value: ColorPreset; label: string; preview: string }[] = [
-    { value: 'hazard', label: 'Hazard', preview: COLOR_PRESETS.hazard.primary },
-    { value: 'cyber', label: 'Cyber', preview: COLOR_PRESETS.cyber.primary },
-    { value: 'matrix', label: 'Matrix', preview: COLOR_PRESETS.matrix.primary },
-    { value: 'plasma', label: 'Plasma', preview: COLOR_PRESETS.plasma.primary },
-    { value: 'blood', label: 'Blood', preview: COLOR_PRESETS.blood.primary },
-    { value: 'arctic', label: 'Arctic', preview: COLOR_PRESETS.arctic.primary },
-    { value: 'phantom', label: 'Phantom', preview: COLOR_PRESETS.phantom.primary },
+    { value: 'neon-sunset', label: 'Neon Sunset', preview: COLOR_PRESETS['neon-sunset'].primary },
+    { value: 'cyber-noir', label: 'Cyber Noir', preview: COLOR_PRESETS['cyber-noir'].primary },
+    { value: 'toxic-green', label: 'Toxic Green', preview: COLOR_PRESETS['toxic-green'].primary },
+    { value: 'vaporwave', label: 'Vaporwave', preview: COLOR_PRESETS['vaporwave'].primary },
+    { value: 'bloodmoon', label: 'Bloodmoon', preview: COLOR_PRESETS['bloodmoon'].primary },
+    { value: 'glacial', label: 'Glacial', preview: COLOR_PRESETS['glacial'].primary },
+    { value: 'phantom-purple', label: 'Phantom', preview: COLOR_PRESETS['phantom-purple'].primary },
   ];
 
   const repeatLabel = { none: 'OFF', one: '1', all: 'ALL', shuffle: 'SHUF' };
@@ -277,6 +281,24 @@ export function LeftPanel({
                 >
                   <m.Icon className="w-4 h-4" />
                   <span className="leading-none">{m.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="text-[9px] tracking-wider block mb-1" style={{ color: 'var(--muted-foreground)' }}>
+              MOVEMENT
+            </label>
+            <div className="flex gap-1">
+              {(Object.keys(VISUAL_MOVEMENTS) as VisualMovement[]).map((m) => (
+                <button
+                  key={m}
+                  className={`app-btn flex-1 text-[8px] py-1.5 ${visualMovement === m ? 'active' : ''}`}
+                  onClick={() => onVisualMovementChange(m)}
+                  disabled={isLocked}
+                >
+                  {VISUAL_MOVEMENTS[m]}
                 </button>
               ))}
             </div>

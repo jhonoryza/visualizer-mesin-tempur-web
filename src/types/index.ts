@@ -1,5 +1,6 @@
 export type VisualMode = 'circular-target' | 'radar' | 'waveform' | 'particle' | 'bass-cannon' | 'neon-grid' | 'dna-helix' | 'wave-tunnel' | 'starburst' | 'pulse-rings' | 'lava-lamp' | 'glitch' | 'spiral' | 'hexagon' | 'matrix-rain' | 'aurora' | 'orbit' | 'wave-bars' | 'ripple' | 'heartbeat' | 'mosaic' | 'fractal';
-export type ColorPreset = 'hazard' | 'cyber' | 'matrix' | 'plasma' | 'blood' | 'arctic' | 'phantom';
+export type VisualMovement = 'static' | 'sequential' | 'random';
+export type ColorPreset = 'neon-sunset' | 'cyber-noir' | 'toxic-green' | 'vaporwave' | 'bloodmoon' | 'glacial' | 'phantom-purple';
 export type AspectRatio = 'landscape' | 'square' | 'vertical';
 export type PerformanceMode = 'light' | 'balanced' | 'ultra';
 export type ExportFormat = 'webm' | 'mp4';
@@ -297,68 +298,68 @@ export const APP_THEMES: Record<AppTheme, AppThemeConfig> = {
 };
 
 export const COLOR_PRESETS: Record<ColorPreset, ColorScheme> = {
-  hazard: {
+  'neon-sunset': {
     primary: '#f59e0b',
-    secondary: '#d97706',
-    accent: '#ef4444',
+    secondary: '#ef4444',
+    accent: '#fbbf24',
     glow: '#f59e0baa',
     bg: '#0a0a0a',
-    grid: '#f59e0b18',
-    name: 'HAZARD',
+    grid: '#f59e0b15',
+    name: 'NEON SUNSET',
   },
-  cyber: {
+  'cyber-noir': {
     primary: '#06b6d4',
-    secondary: '#0891b2',
-    accent: '#8b5cf6',
+    secondary: '#8b5cf6',
+    accent: '#ec4899',
     glow: '#06b6d4aa',
     bg: '#060612',
-    grid: '#06b6d418',
-    name: 'CYBER',
+    grid: '#06b6d415',
+    name: 'CYBER NOIR',
   },
-  matrix: {
+  'toxic-green': {
     primary: '#22c55e',
-    secondary: '#16a34a',
-    accent: '#eab308',
+    secondary: '#eab308',
+    accent: '#10b981',
     glow: '#22c55eaa',
     bg: '#060a06',
-    grid: '#22c55e18',
-    name: 'MATRIX',
+    grid: '#22c55e15',
+    name: 'TOXIC GREEN',
   },
-  plasma: {
+  'vaporwave': {
     primary: '#a855f7',
-    secondary: '#9333ea',
-    accent: '#ec4899',
+    secondary: '#ec4899',
+    accent: '#6366f1',
     glow: '#a855f7aa',
     bg: '#0a0614',
-    grid: '#a855f718',
-    name: 'PLASMA',
+    grid: '#a855f715',
+    name: 'VAPORWAVE',
   },
-  blood: {
+  'bloodmoon': {
     primary: '#ef4444',
-    secondary: '#dc2626',
-    accent: '#f97316',
+    secondary: '#f97316',
+    accent: '#dc2626',
     glow: '#ef4444aa',
     bg: '#140606',
-    grid: '#ef444418',
-    name: 'BLOOD',
+    grid: '#ef444415',
+    name: 'BLOODMOON',
   },
-  arctic: {
+  'glacial': {
     primary: '#38bdf8',
-    secondary: '#0ea5e9',
-    accent: '#e0f2fe',
+    secondary: '#06b6d4',
+    accent: '#a855f7',
     glow: '#38bdf8aa',
     bg: '#060a14',
-    grid: '#38bdf818',
-    name: 'ARCTIC',
+    grid: '#38bdf815',
+    name: 'GLACIAL',
   },
-  phantom: {
+  'phantom-purple': {
     primary: '#d4d4d4',
-    secondary: '#a3a3a3',
-    accent: '#525252',
+    secondary: '#a855f7',
+    accent: '#6366f1',
     glow: '#d4d4d488',
     bg: '#0a0a0a',
-    grid: '#d4d4d412',
-    name: 'PHANTOM',
+    grid: '#d4d4d410',
+    name: 'PHANTOM PURPLE',
   },
 };
 
@@ -374,4 +375,17 @@ export const CANVAS_RESOLUTIONS: Record<CanvasResolution, { w: number; h: number
   '1080p': { w: 1920, h: 1080, label: '1080p' },
   '2k': { w: 2560, h: 1440, label: '2K' },
   '4k': { w: 3840, h: 2160, label: '4K' },
+};
+
+export const ALL_VISUAL_MODES: VisualMode[] = [
+  'circular-target', 'radar', 'waveform', 'particle', 'bass-cannon',
+  'neon-grid', 'dna-helix', 'wave-tunnel', 'starburst', 'pulse-rings',
+  'lava-lamp', 'glitch', 'spiral', 'hexagon', 'matrix-rain',
+  'aurora', 'orbit', 'wave-bars', 'ripple', 'heartbeat', 'mosaic', 'fractal',
+];
+
+export const VISUAL_MOVEMENTS: Record<VisualMovement, string> = {
+  static: 'Static',
+  sequential: 'Sequential',
+  random: 'Random',
 };

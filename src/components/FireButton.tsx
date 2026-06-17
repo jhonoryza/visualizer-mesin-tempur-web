@@ -60,23 +60,10 @@ export function FireButton({ canvasRef, engineRef, audioDuration, tracks, curren
       let mimeType: string;
       let fileExt: string;
 
-      if (exportFormat === 'mp4') {
-        if (MediaRecorder.isTypeSupported('video/mp4;codecs=h264')) {
-          mimeType = 'video/mp4;codecs=h264';
-          fileExt = 'mp4';
-        } else if (MediaRecorder.isTypeSupported('video/webm;codecs=h264')) {
-          mimeType = 'video/webm;codecs=h264';
-          fileExt = 'webm';
-        } else {
-          mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
-            ? 'video/webm;codecs=vp9' : 'video/webm';
-          fileExt = 'webm';
-        }
-      } else {
-        mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
-          ? 'video/webm;codecs=vp9' : 'video/webm';
-        fileExt = 'webm';
-      }
+      // Browser MediaRecorder only supports webm. Record as webm, use user's chosen extension.
+      mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
+        ? 'video/webm;codecs=vp9' : 'video/webm';
+      fileExt = exportFormat;
 
       const chunks: Blob[] = [];
       const recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: 8000000 });

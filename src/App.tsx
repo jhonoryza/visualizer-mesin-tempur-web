@@ -13,6 +13,13 @@ import {
 } from 'lucide-react';
 import type { VisualMode, ColorPreset, AspectRatio, PerformanceMode, AppTheme, CanvasResolution } from './types';
 
+function loadKey<T>(key: string, fallback: T): T {
+  try {
+    const v = localStorage.getItem(key);
+    return v ? (JSON.parse(v) as T) : fallback;
+  } catch { return fallback; }
+}
+
 export default function App() {
   const audio = useAudioEngine();
   const playlist = usePlaylist();
@@ -20,19 +27,30 @@ export default function App() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const playingForTrackRef = useRef<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [appTheme, setAppTheme] = useState<AppTheme>('darkmatter-dark');
-  const [isLocked, setIsLocked] = useState(false);
-  const [visualMode, setVisualMode] = useState<VisualMode>('bass-cannon');
-  const [colorPreset, setColorPreset] = useState<ColorPreset>('arctic');
-  const [aspectRatio, setAspectRatio] = useState<AspectRatio>(
-    typeof window !== 'undefined' && window.innerWidth < 768 ? 'square' : 'landscape'
+  const [appTheme, setAppTheme] = useState<AppTheme>(() => loadKey('appTheme', 'darkmatter-dark'));
+  const [isLocked, setIsLocked] = useState(() => loadKey('isLocked', false));
+  const [visualMode, setVisualMode] = useState<VisualMode>(() => loadKey('visualMode', 'bass-cannon'));
+  const [colorPreset, setColorPreset] = useState<ColorPreset>(() => loadKey('colorPreset', 'arctic'));
+  const [aspectRatio, setAspectRatio] = useState<AspectRatio>(() =>
+    loadKey('aspectRatio', typeof window !== 'undefined' && window.innerWidth < 768 ? 'square' : 'landscape')
   );
-  const [canvasResolution, setCanvasResolution] = useState<CanvasResolution>('480p');
-  const [performanceMode, setPerformanceMode] = useState<PerformanceMode>('balanced');
-  const [mainText, setMainText] = useState('WINEMP');
-  const [subText, setSubText] = useState('AUDIO VISUALIZER');
+  const [canvasResolution, setCanvasResolution] = useState<CanvasResolution>(() => loadKey('canvasResolution', '480p'));
+  const [performanceMode, setPerformanceMode] = useState<PerformanceMode>(() => loadKey('performanceMode', 'balanced'));
+  const [mainText, setMainText] = useState(() => loadKey('mainText', 'WINEMP'));
+  const [subText, setSubText] = useState(() => loadKey('subText', 'AUDIO VISUALIZER'));
   const [isDragging, setIsDragging] = useState(false);
   const [dragTime, setDragTime] = useState(0);
+
+  // Persist to localStorage
+  useEffect(() => { localStorage.setItem('appTheme', JSON.stringify(appTheme)); }, [appTheme]);
+  useEffect(() => { localStorage.setItem('isLocked', JSON.stringify(isLocked)); }, [isLocked]);
+  useEffect(() => { localStorage.setItem('visualMode', JSON.stringify(visualMode)); }, [visualMode]);
+  useEffect(() => { localStorage.setItem('colorPreset', JSON.stringify(colorPreset)); }, [colorPreset]);
+  useEffect(() => { localStorage.setItem('aspectRatio', JSON.stringify(aspectRatio)); }, [aspectRatio]);
+  useEffect(() => { localStorage.setItem('canvasResolution', JSON.stringify(canvasResolution)); }, [canvasResolution]);
+  useEffect(() => { localStorage.setItem('performanceMode', JSON.stringify(performanceMode)); }, [performanceMode]);
+  useEffect(() => { localStorage.setItem('mainText', JSON.stringify(mainText)); }, [mainText]);
+  useEffect(() => { localStorage.setItem('subText', JSON.stringify(subText)); }, [subText]);
 
   const engineRef = audio.engine;
   const trackId = playlist.currentTrack?.id ?? null;
